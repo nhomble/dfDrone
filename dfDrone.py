@@ -6,6 +6,7 @@ import SimpleCV
 import freenect
 
 import droneDetect
+import twist
 
 def main(argv=None):
 	if argv is None:
@@ -15,14 +16,18 @@ def main(argv=None):
 	disp = SimpleCV.Display()
 
 	detector = droneDetect.Detector(cam.getImage())
+	control = twist.Control() 
 
 	# use the display for debugging purposes
 	# should check whether Ros::Ok()?
 	while disp.isNotDone():
 		img = cam.getImage()
-		# ask our detector if there is a drone in the image
-		if detector.process(img):
-			pass
-main()
+		depth = None
+		# ask our detector for new coordinates 
+		valid, delX, delY = detector.process(img, depth)
+		if valid is True:
+			# add the new coordinates to the controller to process
+			control.addToCoordinateQueue(delX, delY)
+
 if __name__ == "__main__":
 	sys.exit(main())
