@@ -18,14 +18,14 @@ class Detector():
 
 	def process(self, img):
 		if(hasDrone(img)):
-			if(self.lastSeenImg = None):
+			if(self.lastSeenImg is None):
 				self.lastSeenImg = img
 			
 
 	# the whole point of this class is to detect whether
 	# a drone is in the image
 	def hasDrone(self, img):
-		img.show()
+		return False
 
 	'''
 	the following are wrappers of simplecv feature detection functions

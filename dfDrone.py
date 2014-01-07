@@ -9,7 +9,7 @@ import droneDetect
 
 def main(argv=None):
 	if argv is None:
-		arv = sys.argv
+		argv = sys.argv
 	
 	cam = SimpleCV.Camera()
 	disp = SimpleCV.Display()
@@ -23,6 +23,6 @@ def main(argv=None):
 		# ask our detector if there is a drone in the image
 		if detector.process(img):
 			pass
-
+main()
 if __name__ == "__main__":
 	sys.exit(main())
