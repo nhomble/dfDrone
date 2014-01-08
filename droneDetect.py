@@ -4,9 +4,15 @@ import time
 
 import SimpleCV
 
+# called by dfDrone to request information
 class Detector():
-	def __init__(self, img):
+	def __init__(self, img, useKinect):
+		self.useKinect = useKinect
+
 		self.prevImg = img
+
+		self.width = img.height
+		self.height = img.width
 
 		self.avgColor = img.getNumpy().mean()
 		self.avgCount = 1
@@ -32,10 +38,16 @@ class Detector():
 		return False, None, None
 			
 
-	# the whole point of this class is to detect whether
-	# a drone is in the image
+	'''
+	use blob areas to only consider blobs of certain size - in conjunction with
+	depth sensor we know how the image should dilate...
+
+	we can crop out the minimal rectangle	
+	'''
 	def hasDrone(self, img, depth):
-		img.show()
+		blobs = img.findBlobs()
+		for b in blobs:
+			print(b.area())
 		return False
 	'''
 	the following are wrappers of simplecv feature detection functions
