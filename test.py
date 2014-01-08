@@ -14,13 +14,13 @@ def main(argv=None):
 	isPositive = False;
 	if argv[1] == "positive":
 		isPositive = True;
-	img = SimpleCV.Image(argv[2])
+	img = SimpleCV.Image("./" + str(argv[2]))
 	
 	detector = droneDetect.Detector(img)
 	if isPositive == detector.hasDrone(img, None):
 		pass
 	else:
-		print(argv[2])
+		print("./" + argv[2])
 
 if __name__ == "__main__":
 	sys.exit(main())
