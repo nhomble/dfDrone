@@ -35,7 +35,8 @@ class Detector():
 	# the whole point of this class is to detect whether
 	# a drone is in the image
 	def hasDrone(self, img, depth):
-		return false
+		img.show()
+		return False
 	'''
 	the following are wrappers of simplecv feature detection functions
 	here I wanted to draw the features when found for debugging purposes
