@@ -34,6 +34,8 @@ class Detector():
 
 	# return whether we got something, and return the centroid if possible
 	def hasDrone(self, img, depth):
+		# highlight the black image to white!
+		img = img.invert()
 		blobs = self.getBlobs(img)
 		if blobs is None:
 			return False, None
@@ -52,31 +54,46 @@ class Detector():
 			print("\n")
 			'''
 			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
-			cropped.show()
-			time.sleep(1)
 			validLines, lines = self.getLines(cropped)
-			corners = self.getCorners(cropped)
+			validCorners, corners = self.getCorners(cropped)
 			# then if I have enough features that meet my criteria I can do
 			# further analysis and then determine if we see a similar looking
 			# object is the actual object
-			if validLines:
-				return True, blob.centroid()
+			if validLines or validCorners:
+				return True, b.centroid()
 		return False, None
 
 	'''
 	when I detect features I want them to meet certain criteria
 	'''
 	# represents structure/rotors the color should be black
+	# return a list of valid lines
 	def validLines(self, lines):
+		ret = []
 		if lines is None:
 			return False, None
 		for l in lines:
 			mean = l.meanColor()
 			# if we get just ONE! black line let's go with it
 			if mean[0] <= 75 and mean[1] <= 75 and mean[2] <= 75:
-				return True, lines
+				ret.append(l)	
+		if len(ret) > 0:
+			return True, ret
 		return False, None
 
+	# should be black as well
+	# return a lis of valid corners
+	def validCorners(self, corners):
+		ret = []
+		if corners is None:
+			return False, None
+		for c in corners:
+			mean = c.meanColor()
+			if mean[0] <= 75 and mean[1] <= 75 and mean[2] <= 75:
+				ret.append(c)
+		if len(ret) > 0:
+			return True, ret
+		return False, None
 	'''
 	the following are wrappers of simplecv feature detection functions
 	here I wanted to draw the features when found for debugging purposes
@@ -92,7 +109,7 @@ class Detector():
 		corners = img.findCorners()
 		if(corners is not None):
 			corners.draw()
-		return corners
+		return self.validCorners(corners)
 
 	def getBlobs(self, img):
 		blobs = img.findBlobs()
