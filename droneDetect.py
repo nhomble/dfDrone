@@ -60,6 +60,8 @@ class Detector():
 			# further analysis and then determine if we see a similar looking
 			# object is the actual object
 			if validLines or validCorners:
+				b.show()
+				time.sleep(5)
 				return True, b.centroid()
 		return False, None
 
@@ -75,7 +77,7 @@ class Detector():
 		for l in lines:
 			mean = l.meanColor()
 			# if we get just ONE! black line let's go with it
-			if mean[0] <= 75 and mean[1] <= 75 and mean[2] <= 75:
+			if validRGB(mean):
 				ret.append(l)	
 		if len(ret) > 0:
 			return True, ret
@@ -89,7 +91,7 @@ class Detector():
 			return False, None
 		for c in corners:
 			mean = c.meanColor()
-			if mean[0] <= 75 and mean[1] <= 75 and mean[2] <= 75:
+			if validRGB(mean):
 				ret.append(c)
 		if len(ret) > 0:
 			return True, ret
@@ -116,3 +118,9 @@ class Detector():
 		if(blobs is not None):
 			blobs.draw()
 		return blobs
+
+# I want to detect black which inverted is white
+def validRGB(rgb):
+	if rgb[0] >= 225 and rgb[1] >= 225 and rgb[2] >= 225:
+		return True
+	return False
