@@ -43,7 +43,7 @@ class Detector():
 		if blobs is None:
 			return False, None
 		for b in blobs:
-			if blobAlreadySeen(b):
+			if self.blobAlreadySeen(b):
 				return True, b.centroid()
 
 			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
@@ -51,16 +51,16 @@ class Detector():
 			validCorners, corners = self.getCorners(cropped)
 
 			# first let's just look at large blobs
-			if b.area() > 1000 and b.perimeter() > 500:
-			
+			if str(b) != "" and b.area() > 1000 and b.perimeter() > 500:
 				self.foundBlobs.append(b)
+				time.sleep(1)
 				return True, b.centroid()
 		return False, None
 
 	def blobAlreadySeen(self, blob):
 		for b in self.foundBlobs:
 			# not sure how precise TODO
-			if b.match(blob) < 10
+			if b.match(blob) < 10:
 				return True
 		return False
 
