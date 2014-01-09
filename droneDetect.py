@@ -45,10 +45,43 @@ class Detector():
 	we can crop out the minimal rectangle	
 	'''
 	def hasDrone(self, img, depth):
-		blobs = img.findBlobs()
+		blobs = self.getBlobs(img)
+		if blobs is None:
+			return False
 		for b in blobs:
-			print(b.area())
+			'''
+			print(b)
+			print("minrect ", b.minRect())
+			print("min", b.minRectHeight(), b.minRectWidth())
+			print("minCoodinates ", b.minRectX(), b.minRectY())
+			print("area ", b.area())
+			print("circle ", b.isCircle())
+			print("rectangle ", b.isRectangle())
+			print("square ", b.isSquare())
+			print("mean color ", b.meanColor())
+			print("perimeter ", b.perimeter())
+			print("\n")
+			'''
+			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
+			validLines, lines = self.getLines(cropped)
+			corners = self.getCorners(cropped)
+			time.sleep(2)
 		return False
+
+	'''
+	when I detect features I want them to meet certain criteria
+	'''
+	# represents structure/rotors the color should be black
+	def validLines(self, lines):
+		if lines is None:
+			return False, None
+		for l in lines:
+			mean = l.meanColor()
+			# if we get just ONE! black line let's go with it
+			if mean[0] <= 75 and mean[1] <= 75 and mean[2] <= 75:
+				return True, lines
+		return False, None
+
 	'''
 	the following are wrappers of simplecv feature detection functions
 	here I wanted to draw the features when found for debugging purposes
@@ -58,7 +91,7 @@ class Detector():
 		lines = img.findLines()
 		if(lines is not None):
 			lines.draw()
-		return lines
+		return self.validLines(lines)
 
 	def getCorners(self, img):
 		corners = img.findCorners()
