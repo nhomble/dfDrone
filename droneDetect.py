@@ -19,6 +19,7 @@ class Detector():
 
 		# use previously found blobs and compare!!! TODO
 		self.foundBlobs = []
+
 	# called by dfDrone
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y)
@@ -42,18 +43,26 @@ class Detector():
 		if blobs is None:
 			return False, None
 		for b in blobs:
+			if blobAlreadySeen(b):
+				return True, b.centroid()
+
 			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
 			validLines, lines = self.getLines(cropped)
 			validCorners, corners = self.getCorners(cropped)
-			cropped.show()
-			time.sleep(1)
+
 			# first let's just look at large blobs
 			if b.area() > 1000 and b.perimeter() > 500:
-				b.show()
-				print(b.area(), b.perimeter())
-				time.sleep(2)
+			
+				self.foundBlobs.append(b)
 				return True, b.centroid()
 		return False, None
+
+	def blobAlreadySeen(self, blob):
+		for b in self.foundBlobs:
+			# not sure how precise TODO
+			if b.match(blob) < 10
+				return True
+		return False
 
 	'''
 	when I detect features I want them to meet certain criteria
