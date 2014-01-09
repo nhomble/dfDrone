@@ -17,7 +17,8 @@ def main(argv=None):
 	img = SimpleCV.Image(str(argv[2]))
 	
 	detector = droneDetect.Detector(img, False)
-	if isPositive == detector.hasDrone(img, None):
+	hasDrone, centroid = detector.hasDrone(img, None)
+	if isPositive == hasDrone:
 		pass
 	else:
 		print(argv[2])
