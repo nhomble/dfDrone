@@ -17,6 +17,8 @@ class Detector():
 		self.lastSeenCent = None
 		self.lastTime = None
 
+		# use previously found blobs and compare!!! TODO
+		self.foundBlobs = []
 	# called by dfDrone
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y)
@@ -40,28 +42,16 @@ class Detector():
 		if blobs is None:
 			return False, None
 		for b in blobs:
-			'''
-			print(b)
-			print("minrect ", b.minRect())
-			print("min", b.minRectHeight(), b.minRectWidth())
-			print("minCoodinates ", b.minRectX(), b.minRectY())
-			print("area ", b.area())
-			print("circle ", b.isCircle())
-			print("rectangle ", b.isRectangle())
-			print("square ", b.isSquare())
-			print("mean color ", b.meanColor())
-			print("perimeter ", b.perimeter())
-			print("\n")
-			'''
 			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
 			validLines, lines = self.getLines(cropped)
 			validCorners, corners = self.getCorners(cropped)
-			# then if I have enough features that meet my criteria I can do
-			# further analysis and then determine if we see a similar looking
-			# object is the actual object
-			if validLines or validCorners:
+			cropped.show()
+			time.sleep(1)
+			# first let's just look at large blobs
+			if b.area() > 1000 and b.perimeter() > 500:
 				b.show()
-				time.sleep(5)
+				print(b.area(), b.perimeter())
+				time.sleep(2)
 				return True, b.centroid()
 		return False, None
 
