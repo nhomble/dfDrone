@@ -14,23 +14,17 @@ class Detector():
 		self.width = img.height
 		self.height = img.width
 
-		self.avgColor = img.getNumpy().mean()
-		self.avgCount = 1
-
-		self.lastSeenImg = None
+		self.lastSeenCent = None
 		self.lastTime = None
-	# give the detector another image that is 
-	# hopefully representative of the environment
-	# and then calculate the average color in the image
-	def average(self, img):
-		newVal = img.getNumpy().mean()
-		self.avgColor = ((self.avgCount * self.avgColor) + newVal)/(self.avgCount + 1)
-		self.avgCount += 1
 
+	# called by dfDrone
+	# we determine if we see a drone in the image
+	# if we see the image, then we determine the delta(x, y)
 	def process(self, img, depth):
-		if(hasDrone(img, depth)):
-			if(self.lastSeenImg is None):
-				self.lastSeenImg = img
+		isFound, centroid = hasDrone(img, depth)
+		if isFound is True:
+			if(self.lastSeenCent is None):
+				self.lastSeenImg = centroid
 			if(self.lastTime is None):
 				self.lastTime = time.gmtime()
 		# eventually I should return a tuple of the new delX, delY	
@@ -38,16 +32,11 @@ class Detector():
 		return False, None, None
 			
 
-	'''
-	use blob areas to only consider blobs of certain size - in conjunction with
-	depth sensor we know how the image should dilate...
-
-	we can crop out the minimal rectangle	
-	'''
+	# return whether we got something, and return the centroid if possible
 	def hasDrone(self, img, depth):
 		blobs = self.getBlobs(img)
 		if blobs is None:
-			return False
+			return False, None
 		for b in blobs:
 			'''
 			print(b)
@@ -63,10 +52,16 @@ class Detector():
 			print("\n")
 			'''
 			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
+			cropped.show()
+			time.sleep(1)
 			validLines, lines = self.getLines(cropped)
 			corners = self.getCorners(cropped)
-			time.sleep(2)
-		return False
+			# then if I have enough features that meet my criteria I can do
+			# further analysis and then determine if we see a similar looking
+			# object is the actual object
+			if validLines:
+				return True, blob.centroid()
+		return False, None
 
 	'''
 	when I detect features I want them to meet certain criteria
