@@ -40,7 +40,7 @@ def main(argv=None):
 		valid, delX, delY = detector.process(img, depth)
 		if valid is True:
 			# add the new coordinates to the controller to process
-			control.addToCoordinateQueue(delX, delY)
+			control.addToVelocityQueue(delX, delY)
 
 if __name__ == "__main__":
 	sys.exit(main())
