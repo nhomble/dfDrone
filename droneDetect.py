@@ -28,11 +28,12 @@ class Detector():
 				self.lastSeenCent = centroid
 			if(self.lastTime is None):
 				self.lastTime = time.gmtime()
+			# create a velocity vector
 			delTime = time.gmtime() - self.lastTime
 			delX = (centroid[0] - self.lastSeenCent[0])/delTime
 			delY = (centroid[1] - self.lastSeenCent[1])/delTime
-			# eventually I should return a tuple of the new delX, delY	
-			return True, delX, delY
+
+			return True, math.ceil(delX), math.ceil(delY)
 		return False, None, None
 			
 
