@@ -9,8 +9,6 @@ class Detector():
 	def __init__(self, img, useKinect):
 		self.useKinect = useKinect
 
-		self.prevImg = img
-
 		self.width = img.height
 		self.height = img.width
 
@@ -27,11 +25,14 @@ class Detector():
 		isFound, centroid = hasDrone(img, depth)
 		if isFound is True:
 			if(self.lastSeenCent is None):
-				self.lastSeenImg = centroid
+				self.lastSeenCent = centroid
 			if(self.lastTime is None):
 				self.lastTime = time.gmtime()
-		# eventually I should return a tuple of the new delX, delY	
-			return True, None, None
+			delTime = time.gmtime() - self.lastTime
+			delX = (centroid[0] - self.lastSeenCent[0])/delTime
+			delY = (centroid[1] - self.lastSeenCent[1])/delTime
+			# eventually I should return a tuple of the new delX, delY	
+			return True, delX, delY
 		return False, None, None
 			
 
@@ -53,7 +54,8 @@ class Detector():
 			# first let's just look at large blobs
 			if str(b) != "" and b.area() > 1000 and b.perimeter() > 500:
 				self.foundBlobs.append(b)
-				time.sleep(1)
+#				b.show()
+#				time.sleep(1)
 				return True, b.centroid()
 		return False, None
 
