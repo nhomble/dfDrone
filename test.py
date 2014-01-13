@@ -18,7 +18,7 @@ def main(argv=None):
 	
 	detector = droneDetect.Detector(img, False)
 	hasDrone, centroid = detector.hasDrone(img, None)
-	if isPositive == hasDrone:
+	if isPositive is hasDrone:
 		pass
 	else:
 		print(argv[2])
