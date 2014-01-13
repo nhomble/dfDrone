@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 
+import math
 import time
 
 import SimpleCV
+import scipy
 
 # called by dfDrone to request information
 class Detector():
@@ -15,12 +17,13 @@ class Detector():
 		self.lastSeenCent = None
 		self.lastTime = None
 
-		# use previously found blobs and compare!!! TODO
+		# use previously found blobs and compare!!!
 		self.foundBlobs = []
 
 	# called by dfDrone
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y)
+	# TODO z coordinate
 	def process(self, img, depth):
 		isFound, centroid = hasDrone(img, depth)
 		if isFound is True:
@@ -39,26 +42,30 @@ class Detector():
 
 	# return whether we got something, and return the centroid if possible
 	def hasDrone(self, img, depth):
-		# highlight the black image to white!
-		img = img.invert()
-		blobs = self.getBlobs(img)
+		# try to extract the darker parts of the image
+		binary = img.binarize(85)
+		blobs = self.getBlobs(binary)
 		if blobs is None:
 			return False, None
 		for b in blobs:
 			if self.blobAlreadySeen(b):
 				return True, b.centroid()
 
-			cropped = img.crop(b.minRectX(), b.minRectY(), b.minRectX() + b.minRectWidth(), b.minRectY() + b.minRectHeight())
-			validLines, lines = self.getLines(cropped)
-			validCorners, corners = self.getCorners(cropped)
-
-			# first let's just look at large blobs
-			if str(b) != "" and b.area() > 1000 and b.perimeter() > 500:
+			x = math.floor(b.minRectX())
+			dx = math.ceil(b.minRectWidth())
+			y = math.floor(b.minRectY())
+			dy = math.floor(b.minRectHeight())
+			cropped = img.crop(x, y, dx, dy)
+			if self.isValid(cropped):
 				self.foundBlobs.append(b)
-#				b.show()
-#				time.sleep(1)
 				return True, b.centroid()
 		return False, None
+
+	# ok now I have a black blob, let's be clever and look at its edges
+	def isValid(self, cropped):
+		cropped.show()
+		time.sleep(2)
+		return False
 
 	def blobAlreadySeen(self, blob):
 		for b in self.foundBlobs:
@@ -88,15 +95,10 @@ class Detector():
 	# should be black as well
 	# return a lis of valid corners
 	def validCorners(self, corners):
-		ret = []
 		if corners is None:
 			return False, None
-		for c in corners:
-			mean = c.meanColor()
-			if validRGB(mean):
-				ret.append(c)
-		if len(ret) > 0:
-			return True, ret
+		if len(corners) > 0:
+			return True, corners 
 		return False, None
 	'''
 	the following are wrappers of simplecv feature detection functions
