@@ -23,7 +23,7 @@ class Detector():
 
 	# called by dfDrone
 	# we determine if we see a drone in the image
-	# if we see the image, then we determine the delta(x, y)
+	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
 		isFound, centroid, dep = hasDrone(img, depth)
 		if isFound is True:
@@ -47,11 +47,13 @@ class Detector():
 		# try to extract the darker parts of the image
 		binary = img.binarize(85)
 		blobs = self.getBlobs(binary)
+		# TODO
+		dep = None
 		if blobs is None:
-			return False, None
+			return False, None, None
 		for b in blobs:
 			if self.blobAlreadySeen(b):
-				return True, b.centroid()
+				return True, b.centroid(), dep 
 
 			# not clear which to use - not very intuitive
 			x = math.floor(b.minRectX())
@@ -63,13 +65,19 @@ class Detector():
 			cropped = img.crop(cx-dx, cy-dy, 2*dx, 2*dy)
 			if b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
-				return True, b.centroid()
-		return False, None
+				return True, b.centroid(), dep
+		return False, None, None
 
 	# ok now I have a black blob, let's be clever and look at its edges
 	def isValid(self, cropped):
 		cropped.show()
 		time.sleep(2)
+		image = cropped.binarize(85)
+		blobs = image.findBlobs()
+		for b in blobs:
+			b.draw()
+			image.show()
+			time.sleep(2)
 		return False
 
 	def blobAlreadySeen(self, blob):
