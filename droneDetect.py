@@ -68,10 +68,15 @@ class Detector():
 		return False
 
 	def blobAlreadySeen(self, blob):
+		counter = 0
 		for b in self.foundBlobs:
 			# not sure how precise TODO
 			if b.match(blob) < 10:
+				# like splay
+				self.foundBlobs.pop(counter)
+				self.foundBlobs.insert(b)	
 				return True
+			counter += 1
 		return False
 
 	'''
