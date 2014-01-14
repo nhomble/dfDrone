@@ -53,12 +53,15 @@ class Detector():
 			if self.blobAlreadySeen(b):
 				return True, b.centroid()
 
+			# not clear which to use - not very intuitive
 			x = math.floor(b.minRectX())
 			dx = math.ceil(b.minRectWidth())
 			y = math.floor(b.minRectY())
 			dy = math.floor(b.minRectHeight())
-			cropped = img.crop(x, y, dx, dy)
-			if self.isValid(cropped):
+			cx = b.centroid()[0]
+			cy = b.centroid()[1]
+			cropped = img.crop(cx-dx, cy-dy, 2*dx, 2*dy)
+			if b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
 				return True, b.centroid()
 		return False, None
