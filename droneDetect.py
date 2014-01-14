@@ -15,6 +15,7 @@ class Detector():
 		self.height = img.width
 
 		self.lastSeenCent = None
+		self.lastDepth = None
 		self.lastTime = None
 
 		# use previously found blobs and compare!!!
@@ -23,21 +24,22 @@ class Detector():
 	# called by dfDrone
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y)
-	# TODO z coordinate
 	def process(self, img, depth):
-		isFound, centroid = hasDrone(img, depth)
+		isFound, centroid, dep = hasDrone(img, depth)
 		if isFound is True:
 			if(self.lastSeenCent is None):
 				self.lastSeenCent = centroid
+			if(self.lastDepth is None):
+				self.lastDepth = dep
 			if(self.lastTime is None):
 				self.lastTime = time.gmtime()
 			# create a velocity vector
 			delTime = time.gmtime() - self.lastTime
 			delX = (centroid[0] - self.lastSeenCent[0])/delTime
 			delY = (centroid[1] - self.lastSeenCent[1])/delTime
-
-			return True, math.ceil(delX), math.ceil(delY)
-		return False, None, None
+			delZ = (dep - self.lastDepth)/delTime	
+			return True, math.ceil(delX), math.ceil(delY), math.ceil(delZ)
+		return False, None, None, None
 			
 
 	# return whether we got something, and return the centroid if possible

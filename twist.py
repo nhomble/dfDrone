@@ -49,4 +49,4 @@ def popVelocityThreaded(control):
 
 	# send twist message via ctypes
 	velTuple = control.velocityQueue.pop()
-	control.lib.twist_sendMessage(control.twist, velTuple[0], velTuple[1]);
+	control.lib.twist_sendMessage(control.twist, velTuple[0], velTuple[1], velTuple[2]);
