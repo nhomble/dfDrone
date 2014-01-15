@@ -8,7 +8,6 @@ detect and follow drone
 * g++ -shared -Wl,-soname,libfoo.so -o libfoo.so  foo.o
 
 **TODO**
-* crop the blob cleanly for analysis
 * currently only using a typical webcam, need to integrate use of kinect with depth sensor
 * create data base of positive blobs
 * create ROS environment (generic)
