@@ -14,8 +14,10 @@ class Detector():
 		self.width = img.height
 		self.height = img.width
 
-		self.lastSeenCent = None
-		self.lastDepth = None
+		# I want to keep the centroid in the center of the image
+		self.lastSeenCent = (img.width/2, img.height/2)
+		# TODO may need to change
+		self.lastDepth = 0
 		self.lastTime = None
 
 		# use previously found blobs and compare!!!
@@ -27,12 +29,16 @@ class Detector():
 	def process(self, img, depth):
 		isFound, centroid, dep = hasDrone(img, depth)
 		if isFound is True:
+			'''
+			# first time
 			if(self.lastSeenCent is None):
 				self.lastSeenCent = centroid
 			if(self.lastDepth is None):
 				self.lastDepth = dep
+			'''
 			if(self.lastTime is None):
 				self.lastTime = time.gmtime()
+
 			# create a velocity vector
 			delTime = time.gmtime() - self.lastTime
 			delX = (centroid[0] - self.lastSeenCent[0])/delTime
@@ -44,41 +50,58 @@ class Detector():
 
 	# return whether we got something, and return the centroid if possible
 	def hasDrone(self, img, depth):
+		objects = None
+
+		# when I have depth data, use it to:
+		#	filter out object in the image
+		#	get z
+		if depth is not None:
+			# no objects means no ARDRone
+			objects = depth.findBlobs()
+			if objects is None:
+				return False, None, None
+			
+			# each image, crop out the blob and then analyze by RGB
+			for obj in objects:
+				cropped = cropFromBlobs(obj, img)
+				
+				# see if the object is an ARDrone
+				tValid, tCentroid= hasDroneAux(cropped)
+				if tValid is True:
+					# index the depth matrix with our centroid
+					dep = depth.getPixel(tCentroid[0], tCentroid[1])
+					# calibrate dep TODO
+					return tValid, tCentroid, dep
+			# bail, try the next image
+			return False, None, None
+		# debug, no depth data
+		else:
+			v, c, = hasDroneAux(img)
+			return v, c, None
+
+	# helper function to see if an ARDRone is in an image by RGB
+	def hasDroneAux(self, img):
 		# try to extract the darker parts of the image
 		binary = img.binarize(85)
 		blobs = self.getBlobs(binary)
-		# TODO
-		dep = None
 		if blobs is None:
 			return False, None, None
 		for b in blobs:
+			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
 				return True, b.centroid(), dep 
 
-			# not clear which to use - not very intuitive
-			x = math.floor(b.minRectX())
-			dx = math.ceil(b.minRectWidth())
-			y = math.floor(b.minRectY())
-			dy = math.floor(b.minRectHeight())
-			cx = b.centroid()[0]
-			cy = b.centroid()[1]
-			cropped = img.crop(cx-dx, cy-dy, 2*dx, 2*dy)
+			cropped = cropFromBlob(b, img)
+
 			if b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
 				return True, b.centroid(), dep
 		return False, None, None
 
-	# ok now I have a black blob, let's be clever and look at its edges
+	# ok now I have a black blob, let's be clever
+	# TODO
 	def isValid(self, cropped):
-		cropped.show()
-		time.sleep(2)
-		image = cropped.binarize(85)
-		blobs = image.findBlobs()
-		for b in blobs:
-			b.draw()
-			image.show()
-			time.sleep(2)
-		return False
+		return True
 
 	def blobAlreadySeen(self, blob):
 		counter = 0
@@ -146,3 +169,17 @@ def validRGB(rgb):
 	if rgb[0] >= 225 and rgb[1] >= 225 and rgb[2] >= 225:
 		return True
 	return False
+
+# just return a cropped image from a blob
+def cropFromBlob(blob, image):
+	# not clear which to use - not very intuitive
+	'''
+	x = math.floor(blob.minRectX())
+	dx = math.ceil(blob.minRectWidth())
+	y = math.floor(blob.minRectY())
+	dy = math.floor(blob.minRectHeight())
+	'''
+	cx = blob.centroid()[0]
+	cy = blob.centroid()[1]
+	cropped = image.crop(cx-dx, cy-dy, 2*dx, 2*dy)
+	return cropped
