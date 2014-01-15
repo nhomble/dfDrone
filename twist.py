@@ -10,6 +10,9 @@ need to review python threading!
 with threads I hope to parallelize the queue of velocity vectors and
 the processing of these vectors with twist messages to ROS (via cytpes)
 '''
+# cause data races are bad!
+# use when accessing velocityQueue
+lock = Thread.Lock()
 class Control(object):
 	def __init__(self):
 			
@@ -35,7 +38,8 @@ class Control(object):
 		thread.join()
 
 def addToVelocityQueueThreaded(control, velocity):
-	control.velocityQueue.append(velocity)
+	with lock:
+		control.velocityQueue.append(velocity)
 
 def popVelocity(control):
 	while True:
@@ -47,6 +51,8 @@ def popVelocityThreaded(control):
 	if len(control.velocityQueue) == 0:
 		pass
 
-	# send twist message via ctypes
-	velTuple = control.velocityQueue.pop()
+	with lock:
+		# send twist message via ctypes
+		velTuple = control.velocityQueue.pop()
+
 	control.lib.twist_sendMessage(control.twist, velTuple[0], velTuple[1], velTuple[2]);
