@@ -83,17 +83,17 @@ class Detector():
 	def hasDroneAux(self, img):
 		# try to extract the darker parts of the image
 		binary = img.binarize(85)
-		blobs = self.getBlobs(binary)
+		blobs = getBlobs(binary)
 		if blobs is None:
 			return False, None, None
 		for b in blobs:
 			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
 				return True, b.centroid(), dep 
-
+			
 			cropped = cropFromBlob(b, img)
-
-			if b.area() > 200 and self.isValid(cropped):
+			meanColor = cropped.meanColor()
+			if validRGB(meanColor) and b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
 				return True, b.centroid(), dep
 		return False, None, None
@@ -115,55 +115,6 @@ class Detector():
 			counter += 1
 		return False
 
-	'''
-	when I detect features I want them to meet certain criteria
-	'''
-	# represents structure/rotors the color should be black
-	# return a list of valid lines
-	def validLines(self, lines):
-		ret = []
-		if lines is None:
-			return False, None
-		for l in lines:
-			mean = l.meanColor()
-			# if we get just ONE! black line let's go with it
-			if validRGB(mean):
-				ret.append(l)	
-		if len(ret) > 0:
-			return True, ret
-		return False, None
-
-	# should be black as well
-	# return a lis of valid corners
-	def validCorners(self, corners):
-		if corners is None:
-			return False, None
-		if len(corners) > 0:
-			return True, corners 
-		return False, None
-	'''
-	the following are wrappers of simplecv feature detection functions
-	here I wanted to draw the features when found for debugging purposes
-	and cool visuals
-	'''
-	def getLines(self, img):
-		lines = img.findLines()
-		if(lines is not None):
-			lines.draw()
-		return self.validLines(lines)
-
-	def getCorners(self, img):
-		corners = img.findCorners()
-		if(corners is not None):
-			corners.draw()
-		return self.validCorners(corners)
-
-	def getBlobs(self, img):
-		blobs = img.findBlobs()
-		if(blobs is not None):
-			blobs.draw()
-		return blobs
-
 # I want to detect black which inverted is white
 def validRGB(rgb):
 	if rgb[0] >= 225 and rgb[1] >= 225 and rgb[2] >= 225:
@@ -183,3 +134,53 @@ def cropFromBlob(blob, image):
 	cy = blob.centroid()[1]
 	cropped = image.crop(cx-dx, cy-dy, 2*dx, 2*dy)
 	return cropped
+
+'''
+when I detect features I want them to meet certain criteria
+'''
+# represents structure/rotors the color should be black
+# return a list of valid lines
+def validLines(lines):
+	ret = []
+	if lines is None:
+		return False, None
+	for l in lines:
+		mean = l.meanColor()
+		# if we get just ONE! black line let's go with it
+		if validRGB(mean):
+			ret.append(l)	
+	if len(ret) > 0:
+		return True, ret
+	return False, None
+
+# should be black as well
+# return a lis of valid corners
+def validCorners(corners):
+	if corners is None:
+		return False, None
+	if len(corners) > 0:
+		return True, corners 
+	return False, None
+'''
+the following are wrappers of simplecv feature detection functions
+here I wanted to draw the features when found for debugging purposes
+and cool visuals
+'''
+def getLines(self, img):
+	lines = img.findLines()
+	if(lines is not None):
+		lines.draw()
+	return validLines(lines)
+
+def getCorners(self, img):
+	corners = img.findCorners()
+	if(corners is not None):
+		corners.draw()
+	return validCorners(corners)
+
+def getBlobs(self, img):
+	blobs = img.findBlobs()
+	if(blobs is not None):
+		blobs.draw()
+	return blobs
+
