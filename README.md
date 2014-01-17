@@ -11,7 +11,6 @@ detect and follow drone
 * on a side note, I need to get this on bitbucket
 * currently only using a typical webcam, need to integrate use of kinect with depth sensor
 * create data base of positive blobs
-* create ROS environment (generic)
 * add velocity vectors into queue (from center!)
 * create/send twist messages based on velocity vectors
 
