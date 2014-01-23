@@ -29,7 +29,7 @@ def main(argv=None):
 
 	# use the display for debugging purposes
 	# should check whether Ros::Ok()?
-	while disp.isNotDone():
+	while True:
 		img = cam.getImage()
 		depth = None
 
