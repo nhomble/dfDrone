@@ -27,7 +27,7 @@ class Detector():
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
-		isFound, centroid, dep = hasDrone(img, depth)
+		isFound, centroid, dep = self.hasDrone(img, depth)
 		if isFound is True:
 			'''
 			# first time
@@ -66,7 +66,7 @@ class Detector():
 				cropped = cropFromBlobs(obj, img)
 				
 				# see if the object is an ARDrone
-				tValid, tCentroid= hasDroneAux(cropped)
+				tValid, tCentroid= self.hasDroneAux(cropped)
 				if tValid is True:
 					# index the depth matrix with our centroid
 					dep = depth.getPixel(tCentroid[0], tCentroid[1])
@@ -76,7 +76,7 @@ class Detector():
 			return False, None, None
 		# debug, no depth data
 		else:
-			v, c, = hasDroneAux(img)
+			v, c, _ = self.hasDroneAux(img)
 			return v, c, None
 
 	# helper function to see if an ARDRone is in an image by RGB
@@ -124,12 +124,12 @@ def validRGB(rgb):
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
 	# not clear which to use - not very intuitive
-	'''
+	
 	x = math.floor(blob.minRectX())
 	dx = math.ceil(blob.minRectWidth())
 	y = math.floor(blob.minRectY())
 	dy = math.floor(blob.minRectHeight())
-	'''
+	
 	cx = blob.centroid()[0]
 	cy = blob.centroid()[1]
 	cropped = image.crop(cx-dx, cy-dy, 2*dx, 2*dy)
@@ -154,7 +154,7 @@ def validLines(lines):
 	return False, None
 
 # should be black as well
-# return a lis of valid corners
+# return a list of valid corners
 def validCorners(corners):
 	if corners is None:
 		return False, None
@@ -166,19 +166,19 @@ the following are wrappers of simplecv feature detection functions
 here I wanted to draw the features when found for debugging purposes
 and cool visuals
 '''
-def getLines(self, img):
+def getLines(img):
 	lines = img.findLines()
 	if(lines is not None):
 		lines.draw()
 	return validLines(lines)
 
-def getCorners(self, img):
+def getCorners(img):
 	corners = img.findCorners()
 	if(corners is not None):
 		corners.draw()
 	return validCorners(corners)
 
-def getBlobs(self, img):
+def getBlobs(img):
 	blobs = img.findBlobs()
 	if(blobs is not None):
 		blobs.draw()
