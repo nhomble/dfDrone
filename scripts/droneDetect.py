@@ -123,17 +123,15 @@ def validRGB(rgb):
 
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
-	# not clear which to use - not very intuitive
-	
-	x = math.floor(blob.minRectX())
-	dx = math.ceil(blob.minRectWidth())
-	y = math.floor(blob.minRectY())
-	dy = math.floor(blob.minRectHeight())
-	
-	cx = blob.centroid()[0]
-	cy = blob.centroid()[1]
-	cropped = image.crop(cx-dx, cy-dy, 2*dx, 2*dy)
-	return image
+	cent = blob.centroid()
+	dx = blob.minRectWidth()/2
+	dy = blob.minRectHeight()/2
+
+	if cent[0] - dx < 0 or cent[1] - dy < 0:
+		return image
+
+	cropped = image.crop(cent[0]-dx, cent[1]-dy, dx, dy)
+
 	return cropped
 
 '''
