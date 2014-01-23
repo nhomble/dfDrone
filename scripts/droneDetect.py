@@ -133,6 +133,7 @@ def cropFromBlob(blob, image):
 	cx = blob.centroid()[0]
 	cy = blob.centroid()[1]
 	cropped = image.crop(cx-dx, cy-dy, 2*dx, 2*dy)
+	return image
 	return cropped
 
 '''
