@@ -14,6 +14,7 @@ def main(argv=None):
 		argv = sys.argv
 
 	# by default use a regular camera
+	disp = SimpleCV.Display()
 	cam = SimpleCV.Camera()
 	useKinect = False
 
@@ -22,7 +23,6 @@ def main(argv=None):
 		cam = SimpleCV.Kinect()
 		useKinect = True
 
-	disp = SimpleCV.Display()
 
 	detector = droneDetect.Detector(cam.getImage(), useKinect)
 	control = twist.Control() 
