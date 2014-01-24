@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/bin/env python2
 
 import sys
 
@@ -14,10 +14,12 @@ def main(argv=None):
 	isPositive = False;
 	if argv[1] == "positive":
 		isPositive = True;
+
+	disp = SimpleCV.Display()
 	img = SimpleCV.Image(str(argv[2]))
-	
+
 	detector = droneDetect.Detector(img, False)
-	hasDrone, centroid = detector.hasDrone(img, None)
+	hasDrone, centroid, dep = detector.hasDrone(img, None)
 	if isPositive is hasDrone:
 		pass
 	else:
