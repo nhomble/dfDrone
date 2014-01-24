@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2 
 
 import math
 import time
@@ -74,7 +74,7 @@ class Detector():
 					return tValid, tCentroid, dep
 			# bail, try the next image
 			return False, None, None
-		# debug, no depth data
+		# debug, dno depth data
 		else:
 			v, c, _ = self.hasDroneAux(img)
 			return v, c, None
@@ -82,16 +82,27 @@ class Detector():
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img):
 		# try to extract the darker parts of the image
-		binary = img.binarize(85)
+		eroded = img.erode(10)
+		binary = eroded.binarize(85)
 		blobs = getBlobs(binary)
 		if blobs is None:
 			return False, None, None
 		for b in blobs:
+
 			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
 				return True, b.centroid(), dep 
 			
 			cropped = cropFromBlob(b, img)
+
+			# get rid of bad crop
+			if cropped is None:
+				continue
+
+			cropped.show()
+			time.sleep(2)
+
+			# TODO, check hue peaks and not rely on mea color
 			meanColor = cropped.meanColor()
 			if validRGB(meanColor) and b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
@@ -101,6 +112,8 @@ class Detector():
 	# ok now I have a black blob, let's be clever
 	# TODO
 	def isValid(self, cropped):
+		if cropped is None:
+			return False
 		return True
 
 	def blobAlreadySeen(self, blob):
@@ -126,12 +139,19 @@ def cropFromBlob(blob, image):
 	cent = blob.centroid()
 	dx = blob.minRectWidth()/2
 	dy = blob.minRectHeight()/2
+	mX = blob.minRectX()-dx
+	mY = blob.minRectY()-dy
 
-	if cent[0] - dx < 0 or cent[1] - dy < 0:
-		return image
+	if dx < 50 and dy < 50:
+		return None
 
-	cropped = image.crop(cent[0]-dx, cent[1]-dy, dx, dy)
+	if mX < 0:
+		mX = 0
+	if mY < 0:
+		mY = 0
 
+	cropped = image.crop(mX, mY, 2*dx, 2*dy)
+	
 	return cropped
 
 '''
