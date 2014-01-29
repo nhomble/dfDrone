@@ -76,7 +76,7 @@ class Detector():
 			return False, None, None
 		# debug, dno depth data
 		else:
-			v, c, _ = self.hasDroneAux(img)
+			v, c = self.hasDroneAux(img)
 			return v, c, None
 
 	# helper function to see if an ARDRone is in an image by RGB
@@ -86,7 +86,7 @@ class Detector():
 		binary = eroded.binarize(85)
 		blobs = getBlobs(binary)
 		if blobs is None:
-			return False, None, None
+			return False, None
 		for b in blobs:
 
 			# have I seen a blob like this before
@@ -102,12 +102,12 @@ class Detector():
 			cropped.show()
 			time.sleep(2)
 
-			# TODO, check hue peaks and not rely on mea color
+			# TODO, check hue peaks and not rely on mea ncolor
 			meanColor = cropped.meanColor()
-			if validRGB(meanColor) and b.area() > 200 and self.isValid(cropped):
+			if b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
-				return True, b.centroid(), dep
-		return False, None, None
+				return True, b.centroid()
+		return False, None
 
 	# ok now I have a black blob, let's be clever
 	# TODO
@@ -119,6 +119,10 @@ class Detector():
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			return False
+		for c in corners:
+			c.draw()
+		cropped.show()
+		time.sleep(2)
 		return True
 
 	def blobAlreadySeen(self, blob):
@@ -135,7 +139,7 @@ class Detector():
 
 # I want to detect black which inverted is white
 def validRGB(rgb):
-	if rgb[0] >= 225 and rgb[1] >= 225 and rgb[2] >= 225:
+	if rgb[0] >= 100 and rgb[1] >= 100 and rgb[2] >= 100:
 		return True
 	return False
 
@@ -182,8 +186,16 @@ def validLines(lines):
 def validCorners(corners):
 	if corners is None:
 		return False, None
+
 	if len(corners) > 0:
-		return True, corners 
+		numValid = 0
+		for c in corners:
+			if validRGB(c.meanColor()):
+				numValid += 1
+		if numValid >= len(corners)/5:
+			return True, corners
+		return False, None
+		 
 	return False, None
 '''
 the following are wrappers of simplecv feature detection functions
