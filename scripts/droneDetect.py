@@ -114,6 +114,11 @@ class Detector():
 	def isValid(self, cropped):
 		if cropped is None:
 			return False
+
+		# because of the frame of the drone I should see SOME corners
+		flag, corners = getCorners(cropped)
+		if flag is False:
+			return False
 		return True
 
 	def blobAlreadySeen(self, blob):
