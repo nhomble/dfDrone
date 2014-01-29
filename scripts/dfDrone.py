@@ -37,10 +37,10 @@ def main(argv=None):
 			depth = cam.getDepth()
 
 		# ask our detector for new coordinates 
-		valid, delX, delY, delZ = detector.process(img, depth)
+		valid, delX, delY, delZ, delT = detector.process(img, depth)
 		if valid is True:
 			# add the new coordinates to the controller to process
-			control.addToVelocityQueue(delX, delY, delZ)
+			control.addToVelocityQueue(delX, delY, delZ, delT)
 		else:
 			control.randomWalk()
 

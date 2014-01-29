@@ -44,8 +44,8 @@ class Detector():
 			delX = (centroid[0] - self.lastSeenCent[0])/delTime
 			delY = (centroid[1] - self.lastSeenCent[1])/delTime
 			delZ = (dep - self.lastDepth)/delTime	
-			return True, math.ceil(delX), math.ceil(delY), math.ceil(delZ)
-		return False, None, None, None
+			return True, math.ceil(delX), math.ceil(delY), math.ceil(delZ), math.ceil(delTime)
+		return False, None, None, None, None
 			
 
 	# return whether we got something, and return the centroid if possible
