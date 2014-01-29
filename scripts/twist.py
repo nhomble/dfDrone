@@ -1,8 +1,14 @@
 #!/usr/bin/env python2
 
-from ctypes import cdll
+# from ctypes import cdll
+
 import sys
 import threading
+
+import roslib; roslib.load_manifest('dfDrone')
+import rospy
+import tf.transformations
+from geometry_msgs.msg import Twist
 
 '''
 need to review python threading!
@@ -17,21 +23,27 @@ class Control(object):
 	def __init__(self):
 		self.velocityQueue = []
 
-		# start thread to spawn more threads to pop velocity vectors
+		# start a thread to pop off velocity vectors 
 		thread = popVelocityThread(self)	
 		thread.start()
 		thread.join()
 	
-	# spawn thread to add velocity vector to queue
+	# spawn new threads
 	def addToVelocityQueue(self, delX, delY, delZ):
 		thread = addToQueueThread(self, delX, delY, delZ)
 		thread.start()
 		thread.join()
 
+	# TODO
+	# we could make it smarted, but let's just spin right now
+	def randomWalk(self):
+		Twist.wheel_left.set_speed(1)
+		Twist.wheel_right.set_speed(-1)
+
 
 class popVelocityThread(threading.Thread):
 	def __init__(self, control):
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, control)
 		self.control = control
 
 	def run(self):
@@ -45,6 +57,7 @@ class addToQueueThread(threading.Thread):
 		self.x = delX
 		self.y = delY
 		self.z = delZ
+	
 	def run(self):
 		addToVelocityQueueThreaded(self.control, (self.x, self.y, self.z))
 
@@ -60,4 +73,4 @@ def popVelocityThreaded(control):
 		# send twist message via ctypes
 		velTuple = control.velocityQueue.pop()
 
-	control.lib.twist_sendMessage(control.twist, velTuple[0], velTuple[1], velTuple[2]);
+	# control.lib.twist_sendMessage(control.twist, velTuple[0], velTuple[1], velTuple[2]);

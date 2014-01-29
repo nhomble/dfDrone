@@ -41,6 +41,8 @@ def main(argv=None):
 		if valid is True:
 			# add the new coordinates to the controller to process
 			control.addToVelocityQueue(delX, delY, delZ)
+		else:
+			control.randomWalk()
 
 if __name__ == "__main__":
 	sys.exit(main())
