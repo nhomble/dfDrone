@@ -23,7 +23,7 @@ def main(argv=None):
 	if isPositive is hasDrone:
 		pass
 	else:
-		print(argv[2])
+		print("should be", isPositive, "but I got", hasDrone, argv[2])
 
 if __name__ == "__main__":
 	sys.exit(main())
