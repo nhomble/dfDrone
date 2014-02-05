@@ -89,15 +89,8 @@ class Detector():
 
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img):
-		# try to extract the darker parts of the image
-		eroded = img.erode(10)
-		binary = eroded.binarize(85)
-		if self.debug is True:
-			eroded.show()
-			time.sleep(2)
-			binary.show()
-			time.sleep(2)
-		blobs = getBlobs(binary, self.min_blob_size, self.max_blob_size)
+		filtered = filterImage(img, self.debug)
+		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			return False, None
 		for b in blobs:
@@ -143,6 +136,25 @@ class Detector():
 			#	return True
 			counter += 1
 		return False
+
+def filterImage(img, debug):
+	# try to extract the darker parts of the image
+	mult = img*4
+	eroded = mult.erode(10)
+	div = eroded/2
+	binary = div.binarize(90)
+	if debug is True:
+		img.show()
+		time.sleep(1)
+		mult.show()
+		time.sleep(1)
+		eroded.show()
+		time.sleep(1)
+		div.show()
+		time.sleep(1)
+		binary.show()
+		time.sleep(1)
+	return binary
 
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
@@ -200,7 +212,7 @@ def validCorners(corners):
 		for c in corners:
 			if validRGB(c.meanColor()):
 				numValid += 1
-		if numValid >= len(corners)/3:
+		if numValid >= len(corners)/5:
 			return True, corners
 		return False, None
 		 
