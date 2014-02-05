@@ -10,14 +10,19 @@ import scipy
 class Detector():
 	def __init__(self, img, useKinect, debug):
 		self.debug = debug
-
 		self.useKinect = useKinect
-
+	
 		self.width = img.height
 		self.height = img.width
+		self.screensize = self.height * self.width
+
+		# precision in blob detection
+		self.min_blob_size = .05 * self.screensize
+		self.max_blob_size = .7 * self.screensize
 
 		# I want to keep the centroid in the center of the image
 		self.lastSeenCent = (img.width/2, img.height/2)
+
 		# TODO may need to change
 		self.lastDepth = 0
 		self.lastTime = None
@@ -36,8 +41,12 @@ class Detector():
 
 			# create a velocity vector
 			delTime = time.time() - self.lastTime
-			delX = (centroid[0] - self.lastSeenCent[0])/delTime
-			delY = (centroid[1] - self.lastSeenCent[1])/delTime
+			delX = centroid[0] - self.lastSeenCent[0]
+			delX = delX/delTime
+			delY = centroid[1] - self.lastSeenCent[1]
+			delY = delY//delTime
+
+			self.lastSeenCent = centroid
 
 			if dep is not None:
 				delZ = (dep - self.lastDepth)/delTime	
@@ -56,7 +65,7 @@ class Detector():
 		#	get z
 		if depth is not None:
 			# no objects means no ARDRone
-			objects = depth.findBlobs()
+			objects = getBlobs(depth, self.min_blob_size, self.max_blob_size)
 			if objects is None:
 				return False, None, None
 			
@@ -83,14 +92,19 @@ class Detector():
 		# try to extract the darker parts of the image
 		eroded = img.erode(10)
 		binary = eroded.binarize(85)
-		blobs = getBlobs(binary)
+		if self.debug is True:
+			eroded.show()
+			time.sleep(2)
+			binary.show()
+			time.sleep(2)
+		blobs = getBlobs(binary, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			return False, None
 		for b in blobs:
-
+			centroid = b.centroid()
 			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
-				return True, b.centroid()
+				return True, centroid
 			
 			cropped = cropFromBlob(b, img)
 
@@ -98,17 +112,15 @@ class Detector():
 			if cropped is None:
 				continue
 
-
-			# TODO, check hue peaks and not rely on mean ncolor
-			meanColor = cropped.meanColor()
-			if b.area() > 200 and self.isValid(cropped):
+			if self.isValid(cropped, centroid):
 				self.foundBlobs.append(b)
-				return True, b.centroid()
+				return True, centroid
 		return False, None
 
 	# ok now I have a black blob, let's be clever
+	# check area - check hue peaks
 	# TODO
-	def isValid(self, cropped):
+	def isValid(self, cropped, centroid):
 		if cropped is None:
 			return False
 		# because of the frame of the drone I should see SOME corners
@@ -119,7 +131,7 @@ class Detector():
 			for c in corners:
 				c.draw()
 			cropped.show()
-			time.sleep(4)
+			time.sleep(2)
 		return True
 
 	def blobAlreadySeen(self, blob):
@@ -131,12 +143,6 @@ class Detector():
 			#	return True
 			counter += 1
 		return False
-
-# I want to detect black which inverted is white
-def validRGB(rgb):
-	if rgb[0] >= 100 and rgb[1] >= 100 and rgb[2] >= 100:
-		return True
-	return False
 
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
@@ -157,6 +163,13 @@ def cropFromBlob(blob, image):
 	cropped = image.crop(mX, mY, 2*dx, 2*dy)
 	
 	return cropped
+
+
+# I want to detect black which inverted is white
+def validRGB(rgb):
+	if rgb[0] >= 100 and rgb[1] >= 100 and rgb[2] >= 100:
+		return True
+	return False
 
 '''
 when I detect features I want them to meet certain criteria
@@ -209,8 +222,12 @@ def getCorners(img):
 #		corners.draw()
 	return validCorners(corners)
 
-def getBlobs(img):
-	blobs = img.findBlobs()
+def getBlobs(img, bMin, bMax):
+	blobs = None
+	try:
+		blobs = img.findBlobs(minsize=bMin, maxsize=bMax)
+	except:
+		print("find blobs complained")
 #	if(blobs is not None):
 #		blobs.draw()
 	return blobs
