@@ -8,7 +8,9 @@ import scipy
 
 # called by dfDrone to request information
 class Detector():
-	def __init__(self, img, useKinect):
+	def __init__(self, img, useKinect, debug):
+		self.debug = debug
+
 		self.useKinect = useKinect
 
 		self.width = img.height
@@ -29,21 +31,18 @@ class Detector():
 	def process(self, img, depth):
 		isFound, centroid, dep = self.hasDrone(img, depth)
 		if isFound is True:
-			'''
-			# first time
-			if(self.lastSeenCent is None):
-				self.lastSeenCent = centroid
-			if(self.lastDepth is None):
-				self.lastDepth = dep
-			'''
 			if(self.lastTime is None):
-				self.lastTime = time.gmtime()
+				self.lastTime = time.time()
 
 			# create a velocity vector
-			delTime = time.gmtime() - self.lastTime
+			delTime = time.time() - self.lastTime
 			delX = (centroid[0] - self.lastSeenCent[0])/delTime
 			delY = (centroid[1] - self.lastSeenCent[1])/delTime
-			delZ = (dep - self.lastDepth)/delTime	
+
+			if dep is not None:
+				delZ = (dep - self.lastDepth)/delTime	
+			else:
+				delZ = 0
 			return True, math.ceil(delX), math.ceil(delY), math.ceil(delZ), math.ceil(delTime)
 		return False, None, None, None, None
 			
@@ -91,7 +90,7 @@ class Detector():
 
 			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
-				return True, b.centroid(), dep 
+				return True, b.centroid()
 			
 			cropped = cropFromBlob(b, img)
 
@@ -99,10 +98,8 @@ class Detector():
 			if cropped is None:
 				continue
 
-			cropped.show()
-			time.sleep(2)
 
-			# TODO, check hue peaks and not rely on mea ncolor
+			# TODO, check hue peaks and not rely on mean ncolor
 			meanColor = cropped.meanColor()
 			if b.area() > 200 and self.isValid(cropped):
 				self.foundBlobs.append(b)
@@ -114,26 +111,24 @@ class Detector():
 	def isValid(self, cropped):
 		if cropped is None:
 			return False
-
 		# because of the frame of the drone I should see SOME corners
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			return False
-		for c in corners:
-			c.draw()
-		cropped.show()
-		time.sleep(2)
+		if self.debug is True:
+			for c in corners:
+				c.draw()
+			cropped.show()
+			time.sleep(4)
 		return True
 
 	def blobAlreadySeen(self, blob):
 		counter = 0
 		for b in self.foundBlobs:
 			# not sure how precise TODO
-			if b.match(blob) < 10:
+			#if b.match(blob) < 10:
 				# like splay
-				self.foundBlobs.pop(counter)
-				self.foundBlobs.insert(b)	
-				return True
+			#	return True
 			counter += 1
 		return False
 
@@ -192,7 +187,7 @@ def validCorners(corners):
 		for c in corners:
 			if validRGB(c.meanColor()):
 				numValid += 1
-		if numValid >= len(corners)/5:
+		if numValid >= len(corners)/3:
 			return True, corners
 		return False, None
 		 
@@ -204,19 +199,19 @@ and cool visuals
 '''
 def getLines(img):
 	lines = img.findLines()
-	if(lines is not None):
-		lines.draw()
+#	if(lines is not None):
+#		lines.draw()
 	return validLines(lines)
 
 def getCorners(img):
 	corners = img.findCorners()
-	if(corners is not None):
-		corners.draw()
+#	if(corners is not None):
+#		corners.draw()
 	return validCorners(corners)
 
 def getBlobs(img):
 	blobs = img.findBlobs()
-	if(blobs is not None):
-		blobs.draw()
+#	if(blobs is not None):
+#		blobs.draw()
 	return blobs
 
