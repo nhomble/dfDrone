@@ -24,7 +24,7 @@ def main(argv=None):
 		useKinect = True
 
 
-	detector = droneDetect.Detector(cam.getImage(), useKinect)
+	detector = droneDetect.Detector(cam.getImage(), useKinect, False)
 	control = twist.Control() 
 
 	# use the display for debugging purposes
