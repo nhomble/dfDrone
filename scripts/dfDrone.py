@@ -28,7 +28,7 @@ def main(argv=None):
 	control = twist.Control() 
 
 	# use the display for debugging purposes
-	# should check whether Ros::Ok()?
+	# TODO check whether Ros::Ok()?
 	while True:
 		img = cam.getImage()
 		depth = None
@@ -36,10 +36,8 @@ def main(argv=None):
 		if useKinect is True:
 			depth = cam.getDepth()
 
-		# ask our detector for new coordinates 
 		valid, delX, delY, delZ, delT = detector.process(img, depth)
 		if valid is True:
-			# add the new coordinates to the controller to process
 			control.addToVelocityQueue(delX, delY, delZ, delT)
 		else:
 			control.randomWalk()

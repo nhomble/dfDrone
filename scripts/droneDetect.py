@@ -64,25 +64,19 @@ class Detector():
 		#	filter out object in the image
 		#	get z
 		if depth is not None:
-			# no objects means no ARDRone
 			objects = getBlobs(depth, self.min_blob_size, self.max_blob_size)
 			if objects is None:
 				return False, None, None
 			
-			# each image, crop out the blob and then analyze by RGB
 			for obj in objects:
 				cropped = cropFromBlobs(obj, img)
 				
-				# see if the object is an ARDrone
 				tValid, tCentroid= self.hasDroneAux(cropped)
 				if tValid is True:
-					# index the depth matrix with our centroid
 					dep = depth.getPixel(tCentroid[0], tCentroid[1])
 					# calibrate dep TODO
 					return tValid, tCentroid, dep
-			# bail, try the next image
 			return False, None, None
-		# debug, dno depth data
 		else:
 			v, c = self.hasDroneAux(img)
 			return v, c, None
@@ -95,13 +89,11 @@ class Detector():
 			return False, None
 		for b in blobs:
 			centroid = b.centroid()
-			# have I seen a blob like this before
 			if self.blobAlreadySeen(b):
 				return True, centroid
 			
 			cropped = cropFromBlob(b, img)
 
-			# get rid of bad crop
 			if cropped is None:
 				continue
 
@@ -137,8 +129,9 @@ class Detector():
 			counter += 1
 		return False
 
+
+# try to extract the darker parts of the image
 def filterImage(img, debug):
-	# try to extract the darker parts of the image
 	mult = img*4
 	eroded = mult.erode(10)
 	div = eroded/2
@@ -194,7 +187,6 @@ def validLines(lines):
 		return False, None
 	for l in lines:
 		mean = l.meanColor()
-		# if we get just ONE! black line let's go with it
 		if validRGB(mean):
 			ret.append(l)	
 	if len(ret) > 0:

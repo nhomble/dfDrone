@@ -17,7 +17,6 @@ need to review python threading!
 with threads I hope to parallelize the queue of velocity vectors
 '''
 
-# cause data races are bad!
 # use when accessing velocityQueue
 queueLock = threading.Lock()
 
@@ -80,16 +79,13 @@ def addToVelocityQueueThreaded(control, velocity):
 
 # function given to thread
 def popVelocityThreaded(control):
-	# just bail ASAP
 	if len(control.velocityQueue) == 0:
 		return
 
-	# blocked because we are adding to the queue
 	with queueLock:
 		localData = threading.local()
 		localData.velTuple = control.velocityQueue.pop()
 
-	# freely move the wheels since we are processing the velocities sequentially
 	startTime = time.gmtime()
 	# rotate
 	# determine arc length (TODO maybe use?)
