@@ -17,9 +17,8 @@ def main(argv=None):
 		img = cam.getImage()
 
 		hasDrone, x, y, z, t = detector.process(img, None)
-		#if hasDrone is True:
-			#img.drawText(text)
-			#img.show()
+		if hasDrone is True:
+			print(x, y, t)
 
 if __name__ == "__main__":
 	sys.exit(main())
