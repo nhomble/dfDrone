@@ -101,10 +101,10 @@ class Detector():
 				continue
 
 			if self.isValid(cropped, centroid):
-				print(cropped.area())
-				# TODO hardcode
+
 				if cropped.area() > 20000 and len(blobs) > 1:
 					return self.hasDroneAux(cropped)
+				# TODO hardcode
 				self.foundBlobs.append(b)
 				return True, centroid
 		return False, None
@@ -146,7 +146,7 @@ def filterImage(img, debug):
 	gray = gray/2
 	eroded = gray.erode(10)
 	mult = eroded*2
-	binary = mult.binarize()
+	binary = mult.binarize(90)
 	if debug is True:
 		img.show()
 		time.sleep(.5)
@@ -225,7 +225,7 @@ def validCorners(corners, img):
 			if validRGB(c.meanColor()):
 				numValid += 1
 		# TODO should not hardcode
-		if numValid > 5:
+		if numValid > 5 and numValid < 15:
 			return True, corners
 		return False, None
 		 
