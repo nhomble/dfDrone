@@ -36,6 +36,8 @@ class Detector():
 	def process(self, img, depth):
 		isFound, centroid, dep = self.hasDrone(img, depth)
 		if isFound is True:
+			if self.debug is True:
+				print("FOUND")
 			if(self.lastTime is None):
 				self.lastTime = time.time()
 
@@ -87,6 +89,7 @@ class Detector():
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			return False, None
+
 		for b in blobs:
 			centroid = b.centroid()
 			if self.blobAlreadySeen(b):
@@ -98,6 +101,10 @@ class Detector():
 				continue
 
 			if self.isValid(cropped, centroid):
+				print(cropped.area())
+				# TODO hardcode
+				if cropped.area() > 20000 and len(blobs) > 1:
+					return self.hasDroneAux(cropped)
 				self.foundBlobs.append(b)
 				return True, centroid
 		return False, None
@@ -112,7 +119,6 @@ class Detector():
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			return False
-		
 
 		if self.debug is True:
 			for c in corners:
@@ -121,34 +127,40 @@ class Detector():
 			time.sleep(2)
 		return True
 
+	# TODO fix
 	def blobAlreadySeen(self, blob):
+		return False
 		counter = 0
 		for b in self.foundBlobs:
 			# not sure how precise TODO
-			#if b.match(blob) < 10:
+			if b.match(blob) < 10:
 				# like splay
-			#	return True
+				return True
 			counter += 1
 		return False
 
 
 # try to extract the darker parts of the image
 def filterImage(img, debug):
-	mult = img*4
-	eroded = mult.erode(10)
-	div = eroded/2
-	binary = div.binarize(90)
+	gray = img.colorDistance(SimpleCV.Color.BLACK).dilate(3)
+	gray = gray/2
+	eroded = gray.erode(10)
+	mult = eroded*2
+	binary = mult.binarize()
 	if debug is True:
 		img.show()
-		time.sleep(1)
-		mult.show()
-		time.sleep(1)
+		time.sleep(.5)
+		gray.show()
+		time.sleep(.5)
 		eroded.show()
-		time.sleep(1)
-		div.show()
-		time.sleep(1)
+		time.sleep(.5)
+
+		mult.show()
+		time.sleep(.5)
+		#div.show()
+		#time.sleep(.5)
 		binary.show()
-		time.sleep(1)
+		time.sleep(.5)
 	return binary
 
 # just return a cropped image from a blob
@@ -205,14 +217,15 @@ def validCorners(corners, img):
 		numValid = 0
 		for c in corners:
 			dist = distanceFromCenter(c, img)
-			print(dist)
+			# print(dist)
 			# TODO I should not hardcode this value
 			if dist > 75:
 				continue
 			
 			if validRGB(c.meanColor()):
 				numValid += 1
-		if numValid >= len(corners)/5:
+		# TODO should not hardcode
+		if numValid > 5:
 			return True, corners
 		return False, None
 		 
