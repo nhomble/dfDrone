@@ -113,9 +113,6 @@ class Detector():
 		if flag is False:
 			return False
 		
-		flag, lines = getLines(cropped)
-		if flag is False:
-			return False
 
 		if self.debug is True:
 			for c in corners:
@@ -200,14 +197,19 @@ def validLines(lines):
 
 # should be black as well
 # return a list of valid corners
-def validCorners(corners):
+def validCorners(corners, img):
 	if corners is None:
 		return False, None
 
 	if len(corners) > 0:
 		numValid = 0
 		for c in corners:
-			print(c.x, c.y)
+			dist = distanceFromCenter(c, img)
+			print(dist)
+			# TODO I should not hardcode this value
+			if dist > 75:
+				continue
+			
 			if validRGB(c.meanColor()):
 				numValid += 1
 		if numValid >= len(corners)/5:
@@ -218,8 +220,8 @@ def validCorners(corners):
 
 # obj must have x, y fields
 def distanceFromCenter(obj, img):
-	width = img.width()
-	height = img.height()
+	width = img.width
+	height = img.height
 	center = (width/2, height/2 )
 
 	delX = obj.x - center[0]
@@ -245,7 +247,7 @@ def getCorners(img):
 	corners = img.findCorners()
 	if(corners is not None):
 		corners.draw()
-	return validCorners(corners)
+	return validCorners(corners, img)
 
 def getBlobs(img, bMin, bMax):
 	blobs = None
