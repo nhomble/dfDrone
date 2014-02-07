@@ -112,6 +112,11 @@ class Detector():
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			return False
+		
+		flag, lines = getLines(cropped)
+		if flag is False:
+			return False
+
 		if self.debug is True:
 			for c in corners:
 				c.draw()
@@ -202,6 +207,7 @@ def validCorners(corners):
 	if len(corners) > 0:
 		numValid = 0
 		for c in corners:
+			print(c.x, c.y)
 			if validRGB(c.meanColor()):
 				numValid += 1
 		if numValid >= len(corners)/5:
@@ -209,6 +215,21 @@ def validCorners(corners):
 		return False, None
 		 
 	return False, None
+
+# obj must have x, y fields
+def distanceFromCenter(obj, img):
+	width = img.width()
+	height = img.height()
+	center = (width/2, height/2 )
+
+	delX = obj.x - center[0]
+	delY = obj.y - center[1]
+
+	distance = (delX*delX) + (delY*delY)
+	distance = math.sqrt(distance)
+
+	return distance
+
 '''
 the following are wrappers of simplecv feature detection functions
 here I wanted to draw the features when found for debugging purposes
@@ -216,14 +237,14 @@ and cool visuals
 '''
 def getLines(img):
 	lines = img.findLines()
-#	if(lines is not None):
-#		lines.draw()
+	if(lines is not None):
+		lines.draw()
 	return validLines(lines)
 
 def getCorners(img):
 	corners = img.findCorners()
-#	if(corners is not None):
-#		corners.draw()
+	if(corners is not None):
+		corners.draw()
 	return validCorners(corners)
 
 def getBlobs(img, bMin, bMax):
