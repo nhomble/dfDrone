@@ -12,8 +12,6 @@ import tf.transformations
 from geometry_msgs.msg import Twist
 
 '''
-need to review python threading!
-
 with threads I hope to parallelize the queue of velocity vectors
 '''
 
@@ -25,6 +23,9 @@ queueLock = threading.Lock()
 class Control(object):
 	def __init__(self):
 		self.velocityQueue = []
+
+		rospy.init_node('move_dfDrone')
+		self.pub = rospy.Publisher('cmd_vel', Twist)
 
 		# start a thread that does not die
 		thread = popVelocityThread(self)	
@@ -40,12 +41,18 @@ class Control(object):
 	# TODO
 	# we could make it smarted, but let's just spin now
 	def randomWalk(self):
-		Twist.wheel_left.set_speed(1)
-		Twist.wheel_right.set_speed(-1)
+		rospy.loginfo("moving aimlessly")
+		twist = Twist()
+		twist.linear.x = 1
+		twist.linear.y = 1
 		time.sleep(1)
 
 		stopMoving()
 
+	def stopMoving(self):
+		rospy.loginfo("stopping")
+		twist = Twist()
+		self.pub.publish(twist)
 
 # spawned by control, I just keep pestering
 # the queue trying to get a velocity vector to work
@@ -94,23 +101,23 @@ def popVelocityThreaded(control):
 	arcLength = arcLength * radians / (2 * math.pi)
 
 	while localData.velTuple[3] > time.gmtime() - startTime:
+		rospy.loginfo("turning")
+		twist = Twist()
 		if localData.velTuple[2] < 0:
-			Twist.wheel_right.set_speed(1)
+			twist.angular.x = 1
 		elif localData.velTuple[2] > 0:
-			Twist.wheel_left.set_speed(1)
+			twist.angular.x = -1
 		else:
 			break
+		control.pub.publish(twist)
 		time.sleep(.5)
 
 	startTime = time.gmtime()
 	# move closer
 	while localData.velTuple[3] > time.gmtime() - startTime:
-		Twist.wheel_left.set_speed(1)
-		Twist.wheel_right.set_speed(1)
+		rospy.loginfo("moving forward")
+		twist = Twist()
+		twist.linear.x = 1
+		control.pub.publish(twist)
 		time.sleep(.5)
 		stopMoving()
-
-# because I should not type this over and over again
-def stopMoving():
-		Twist.wheel_left.set_speed(0)
-		Twist.wheel_right.set_speed(0)
