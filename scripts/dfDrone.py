@@ -41,6 +41,7 @@ def main(argv=None):
 			control.addToVelocityQueue(delX, delY, delZ, delT)
 		else:
 			control.randomWalk()
+			detector().reCenter()
 
 if __name__ == "__main__":
 	sys.exit(main())
