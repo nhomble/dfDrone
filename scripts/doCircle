@@ -11,21 +11,21 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
-	rospy.init_node('move')
-	p = rospy.Publisher('cmd_vel', Twist)
+	rospy.init_node('doCircle')
+	p = rospy.Publisher('~cmd_vel', Twist)
+	
+	rospy.loginfo("about to circle")
 
-	twist = Twist()
-	twist.linear.x = 1
+	for i in range(10):
+		twist = Twist()
+		twist.angular.y = 1
+		twist.angular.z = 1
 
-	rospy.loginfo("about to move forward")
-	for i in range(30):
 		p.publish(twist)
 		rospy.sleep(1)
 		rospy.loginfo("moving")
-
-
-	twist = Twist()
 	rospy.loginfo("stopping")
+	twist = Twist()
 	p.publish(twist)
 
 if __name__ == "__main__":

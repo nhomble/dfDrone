@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="dfDrone" name="moveForwardDrone" required="true" type="moveForward" output="screen">
+		<remap from="moveForwardDrone/cmd_vel" to="cmd_vel_mux/input/teleop"/>
+	</node>
+</launch>

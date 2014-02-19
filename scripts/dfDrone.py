@@ -20,8 +20,17 @@ def main(argv=None):
 
 	# but try to get the kinect
 	if len(argv) > 1 and argv[1] is "kinect":
-		cam = SimpleCV.Kinect()
-		useKinect = True
+		try:
+			cam = SimpleCV.Kinect()
+			useKinect = True
+		except:
+			print("COULD NOT GET KINECT via SIMPLECV")
+			useKinect = False
+			try:
+				cam = SimpleCV.Camera()
+			except:
+				print("CANNOT GET REGULAR CAMERA, ABORT")
+				return
 
 
 	detector = droneDetect.Detector(cam.getImage(), useKinect, False)
@@ -41,6 +50,7 @@ def main(argv=None):
 			control.addToVelocityQueue(delX, delY, delZ, delT)
 		else:
 			control.randomWalk()
+			detector().reCenter()
 
 if __name__ == "__main__":
 	sys.exit(main())

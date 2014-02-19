@@ -30,7 +30,9 @@ class Detector():
 		# use previously found blobs and compare!!!
 		self.foundBlobs = []
 
-	# called by dfDrone
+	def reCenter(self):
+		self.lastSeenCent = (img.width/2, img.height/2)
+
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
