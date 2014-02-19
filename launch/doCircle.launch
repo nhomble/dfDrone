@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="dfDrone" name="doCircleDrone" required="true" type="doCircle" output="screen">
+		<remap from="doCircleDrone/cmd_vel" to="cmd_vel_mux/input/teleop"/>
+	</node>
+</launch>
