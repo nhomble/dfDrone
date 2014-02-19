@@ -11,11 +11,12 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
-	rospy.init_node('move')
-	p = rospy.Publisher('cmd_vel', Twist)
+	rospy.init_node('moveForward')
+	p = rospy.Publisher('~cmd_vel', Twist)
 
 	twist = Twist()
 	twist.linear.x = 1
+	twist.linear.y = 0
 
 	rospy.loginfo("about to move forward")
 	for i in range(30):

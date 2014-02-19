@@ -1,5 +1,5 @@
 <package>
-  <description brief="drone">
+  <description brief="detect follow drone">
 
      dfDrone
 
@@ -13,6 +13,7 @@
   <depend package="std_msgs"/>
   <depend package="openni_camera"/>
   <depend package="turtlebot_bringup"/>
+  <depend package="cmd_vel_mux"/>
 
 </package>
 
