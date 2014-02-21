@@ -1,20 +1,21 @@
 #!/usr/bin/env python2
 
 import sys
+import SimpleCV
 
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
-from std_msgs.msg import String
+from sensor_msgs.msg import Image
 
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
 	rospy.init_node('getImage')
-	p = rospy.Subscriber('camera/rgb/image_color', String, convert)
+	p = rospy.Subscriber('camera/rgb/image_color', Image, convert)
 	rospy.spin()
-def convert(string):
-	print(string)
+def convert(image):
+	print(image.encoding)
 
 if __name__ == "__main__":
 	sys.exit(main())
