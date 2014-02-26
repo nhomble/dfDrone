@@ -1,10 +1,13 @@
 #!/usr/bin/env python2
 
 import sys
-import SimpleCV
 
+import cv
+import cv2.cv as cv
+from cv_bridge import CvBridge, CvBridgeError
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
+import SimpleCV
 from sensor_msgs.msg import Image
 
 def main(argv=None):
@@ -15,7 +18,16 @@ def main(argv=None):
 	p = rospy.Subscriber('camera/rgb/image_color', Image, convert)
 	rospy.spin()
 def convert(image):
-	print(image.encoding)
+	b = CvBridge()
+	frame = b.imgmsg_to_cv(image, "bgr8")
+	scv = SimpleCV.Image(frame, cv2image=True)
+	scv.show()
+	delay(1000)
+#	try:
+#		b = CvBridge()
+#		cv_image = b.bridge.imgmsg_to_cv(image.data, "bgr8")	
+#	except CvBridgeError, e:
+#		print e
 
 if __name__ == "__main__":
 	sys.exit(main())
