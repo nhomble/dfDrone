@@ -1,4 +1,4 @@
 <launch>
-	<node pkg="dfDrone" name="getImageDrone" required="true" type="getImage" output="screen">
+	<node pkg="dfDrone" name="getImageNode" required="true" type="getImage" output="screen">
 	</node>
 </launch>
