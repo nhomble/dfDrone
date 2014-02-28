@@ -1,9 +1,9 @@
-#!/bin/env python2
+#!/usr/bin/env python2
 
 import sys
 import time
 import SimpleCV
-import droneDetect
+import detectDrone
 
 def main(argv=None):
 	if argv is None:
@@ -11,14 +11,14 @@ def main(argv=None):
 	cam = SimpleCV.Camera()
 	disp = SimpleCV.Display()
 
-	detector = droneDetect.Detector(cam.getImage(), False, True)
+	detector = detectDrone.Detector(True)
 
 	while disp.isNotDone():
 		img = cam.getImage()
 
-		hasDrone, x, y, z, t = detector.process(img, None)
+		hasDrone, centroid, z = detector.process(img, None)
 		if hasDrone is True:
-			print(x, y, t)
+			print(centroid)
 
 if __name__ == "__main__":
 	sys.exit(main())
