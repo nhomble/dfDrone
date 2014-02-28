@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="dfDrone" name="startNode" required="true" type="startDrone" output="screen">
+	</node>
+</launch>
