@@ -1,0 +1,92 @@
+#!/usr/bin/env python2
+
+'''
+All this node does is relay camera data into detectDrone 
+and then publish centroid and depth data
+'''
+
+# python default modules
+import sys
+import time
+
+# ROS specifoc
+import message_filters
+import roslib; roslib.load_manifest('dfDrone')
+import rospy
+from sensor_msgs.msg import Image
+
+# opencv and simplecv modules
+import cv
+import cv2.cv as cv
+from cv_bridge import CvBridge, CvBridgeError
+import SimpleCV
+
+# my modules
+import detectDrone
+
+# I need this object to persist over ros spins
+global_detector = None
+
+# TimeSequencer is not available for python... dumb
+global_depth = None
+global_color = None
+global_getColor = True
+
+# ROS loop
+def main(argv=None):
+	if argv is None:
+		argv = sys.argv
+
+	rospy.init_node('startNode')
+	
+	#color_sub = message_filters.Subscriber('/camera/rgb/image_color', Image)
+	#depth_sub = message_filters.Subscriber('/camera/depth/image_rect', Image)
+	#ros_image_sub = message_filters.TimeSynchronizer([color_sub, depth_sub], 10)
+	#ros_image_sub.registerCallback(newImageCallback)
+	if global_getColor is True:
+		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+	else:
+		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
+
+	rospy.spin()
+
+def depthCallback(image):
+	rospy.loginfo("depth")
+	global_getColor = True
+	global_depth = image
+	
+	if global_color is not None and global_depth is not None:
+		processImage(global_color, global_depth)
+
+def colorCallback(image):
+	rospy.loginfo("color")
+	global_getColor = False
+	global_color = image
+
+	if global_color is not None and global_depth is not None:
+		processImage(global_color, global_depth)
+
+# upon getting BOTH a new color and depth image call this callback
+def processImage(colorImage, depthImage):
+	rospy.loginfo("present")
+	pass
+        b = CvBridge()
+        colorFrame = b.imgmsg_to_cv(colorImage, "bgr8")
+	depthFrame = b.imgmsg_to_cv(depthImage, "32fc1")
+        color = SimpleCV.Image(colorFrame, cv2image=True)
+	depth = SimpleCV.Image(colorFrame, cv2image=True)
+	
+	color.show()
+	depth.show()
+
+	positive, centroid, z = global_detector.process(color, depth)	
+	
+	if positive is True:
+		global_lastCentroid = centroid
+		global_lastZ = z
+	else:
+		pass
+
+if __name__ == "__main__":
+	global_detector = detectDrone.Detector(False)
+	sys.exit(main())
