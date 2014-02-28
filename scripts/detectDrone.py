@@ -8,56 +8,31 @@ import scipy
 
 # called by dfDrone to request information
 class Detector():
-	def __init__(self, img, useKinect, debug):
+	def __init__(self, debug):
 		self.debug = debug
-		self.useKinect = useKinect
+
+		self.min_blob_size = None
+		self.max_blob_size = None
 	
-		self.width = img.height
-		self.height = img.width
-		self.screensize = self.height * self.width
-
-		# precision in blob detection
-		self.min_blob_size = .05 * self.screensize
-		self.max_blob_size = .7 * self.screensize
-
-		# I want to keep the centroid in the center of the image
-		self.lastSeenCent = (img.width/2, img.height/2)
-
-		# TODO may need to change
-		self.lastDepth = 0
-		self.lastTime = None
-
 		# use previously found blobs and compare!!!
 		self.foundBlobs = []
-
-	def reCenter(self):
-		self.lastSeenCent = (img.width/2, img.height/2)
 
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
-		isFound, centroid, dep = self.hasDrone(img, depth)
+		if (img is None or depth is None) and self.debug is False:
+			return False, None, None
+
+		self.min_blob_size = .05 * img.height
+		self.max_blob_size = .7 * img.height
+		
+		isFound, centroid, z = self.hasDrone(img, depth)
 		if isFound is True:
 			if self.debug is True:
 				print("FOUND")
-			if(self.lastTime is None):
-				self.lastTime = time.time()
-
-			# create a velocity vector
-			delTime = time.time() - self.lastTime
-			delX = centroid[0] - self.lastSeenCent[0]
-			delX = delX/delTime
-			delY = centroid[1] - self.lastSeenCent[1]
-			delY = delY//delTime
-
-			self.lastSeenCent = centroid
-
-			if dep is not None:
-				delZ = (dep - self.lastDepth)/delTime	
-			else:
-				delZ = 0
-			return True, math.ceil(delX), math.ceil(delY), math.ceil(delZ), math.ceil(delTime)
-		return False, None, None, None, None
+			
+			return True, centroid, z
+		return False, None, None
 			
 
 	# return whether we got something, and return the centroid if possible
