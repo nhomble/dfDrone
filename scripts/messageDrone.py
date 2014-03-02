@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 
+# TODO, translate into ROS
+
 class DFDMessage():
 	def __init__(self, flag, centroid, z):
 		self.isPresent = flag
