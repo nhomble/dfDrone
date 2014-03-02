@@ -23,9 +23,11 @@ import SimpleCV
 
 # my modules
 import detectDrone
+# TODO import custom message
 
 # I need this object to persist over ros spins
 global_detector = None
+global_publisher = None
 
 # TimeSequencer is not available for python... dumb
 global_depth = None
@@ -43,6 +45,7 @@ def main(argv=None):
 	#depth_sub = message_filters.Subscriber('/camera/depth/image_rect', Image)
 	#ros_image_sub = message_filters.TimeSynchronizer([color_sub, depth_sub], 10)
 	#ros_image_sub.registerCallback(newImageCallback)
+
 	if global_getColor is True:
 		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
 	else:
@@ -51,7 +54,7 @@ def main(argv=None):
 	rospy.spin()
 
 def depthCallback(image):
-	rospy.loginfo("depth")
+	rospy.loginfo("depth callback")
 	global_getColor = True
 	global_depth = image
 	
@@ -59,7 +62,7 @@ def depthCallback(image):
 		processImage(global_color, global_depth)
 
 def colorCallback(image):
-	rospy.loginfo("color")
+	rospy.loginfo("color callback")
 	global_getColor = False
 	global_color = image
 
@@ -68,25 +71,25 @@ def colorCallback(image):
 
 # upon getting BOTH a new color and depth image call this callback
 def processImage(colorImage, depthImage):
-	rospy.loginfo("present")
-	pass
+	rospy.loginfo("processing image")
+
         b = CvBridge()
         colorFrame = b.imgmsg_to_cv(colorImage, "bgr8")
 	depthFrame = b.imgmsg_to_cv(depthImage, "32fc1")
         color = SimpleCV.Image(colorFrame, cv2image=True)
 	depth = SimpleCV.Image(colorFrame, cv2image=True)
 	
-	color.show()
-	depth.show()
+	message = global_detector.process(color, depth)	
 
-	positive, centroid, z = global_detector.process(color, depth)	
-	
-	if positive is True:
-		global_lastCentroid = centroid
-		global_lastZ = z
-	else:
-		pass
+	# TODO
+	global_publisher.publish(message)
 
 if __name__ == "__main__":
+	rospy.loginfo("beginning startDrone")
+	# create detector with no debug option
 	global_detector = detectDrone.Detector(False)
-	sys.exit(main())
+	global_publisher = rospy.Publisher("dfdMessenger", DFDMessage)
+	try:
+		sys.exit(main())
+	except rospy.ROSInterruptException:
+		pass
