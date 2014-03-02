@@ -1,10 +1,14 @@
 #!/usr/bin/env python2 
 
+# python built-in modules
 import math
 import time
 
+# SimpleCV imports
 import SimpleCV
-import scipy
+
+# my modules
+import messageDrone
 
 # called by dfDrone to request information
 class Detector():
@@ -21,18 +25,20 @@ class Detector():
 	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
 		if (img is None or depth is None) and self.debug is False:
-			return False, None, None
+			return messageDrone.DFDMessage(False, None, None, None)
 
 		self.min_blob_size = .05 * img.height
 		self.max_blob_size = .7 * img.height
 		
 		isFound, centroid, z = self.hasDrone(img, depth)
+		message = messageDrone.DFDMessage(isFound, centroid, z)
+		print(message.isPresent)
 		if isFound is True:
 			if self.debug is True:
 				print("FOUND")
 			
-			return True, centroid, z
-		return False, None, None
+			return message
+		return messageDrone.DFDMessage(False, None, None)
 			
 
 	# return whether we got something, and return the centroid if possible
