@@ -3,15 +3,15 @@ dfDrone
 
 detect and follow drone
 
-+ Nodes
+## Nodes
 - startDrone <--> detectDrone
 - centerDrone
 - moveDrone
 
-+ Messages
+## Messages
 - DFDMessage
 
-+ Prior to running, you must:
+## Prior to running, you must:
 - $ roscore
 - $ roslaunch turtlebot_bringup minimal.launch
 
