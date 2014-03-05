@@ -31,7 +31,7 @@ class Detector():
 		self.max_blob_size = .7 * img.height
 		
 		isFound, centroid, z = self.hasDrone(img, depth)
-		message = messageDrone.DFDMessage(isFound, centroid, z)
+		message = messageDrone.DFDMessage(isFound, centroid, z, img.width, img.height)
 		print(message.isPresent)
 		if isFound is True:
 			if self.debug is True:

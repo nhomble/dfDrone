@@ -8,24 +8,28 @@ for moveDrone
 '''
 
 # python built-ins
+import math
 import sys
 import time
 
 # ROS
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
+from std_msgs.msg import Float64MultiArray
 
 # my messages/modules
-# TODO need to import my DFDMessage
+import messageDrone
+import velocityDrone
 
 # globals, need to remember previous 
-# centroid and last time I saw it
-global_last_centroid = None
+global_publisher = None
+
 global_last_time = None
 
 # in case I do not see the drone
 # I keep track of how many bad "packets"
 global_miss = 0
+MISS_MAX = 10
 
 def main(argv=None):
 	if argv is None:
@@ -34,13 +38,44 @@ def main(argv=None):
 	rospy.init_node('centerDrone')
 	rospy.loginfo("centerDrone has initialized")
 
-	dfd_sub = rospy.Subscriber('/dfDrone/startNode', DFDMessage, centroidCallback)
+	dfd_sub = rospy.Subscriber('/dfDrone/startDrone', Float64MultiArray, centroidCallback)
 	rospy.spin()
 
 def centroidCallback(message):
 	rospy.logInfo("centroid callback in centerDrone")
-	# TODO once I know I got my messages right
+	message = MessageDrone.DFDMessage(message[0] == 1.0, (message[1], message[2]), message[3], mesage[4], message[5])
+	if global_last_centroid is None:
+		global_last_centroid = message
+		global_last_time = time.gmtime()
+		pass
+
+	delT = time.gmtime() - global_last_time
+
+	xCenter = message.width/2
+	yCenter = message.height/2
+	
+	if message.isPresent is True:
+		rospy.logInfo("positive callback in centerDrone")
+		# currently let's just center
+
+		# rotate for delX, move linearly for delY
+		sendVelocityMessage(xCenter, yCenter, message)
+	else:
+		rospy.logInfo("negative callback in centerDrone")
+		global_miss += 1	
+		if global_miss > MISS_MAX:
+			rospy.logInfo("too many negatives, requesting for random walk")
+			sendRandomWalk(xCenter, yCenter, message)
+			global_miss = 0
+
+	global_last_time = time.gmtime()
+
+def sendVelocityMessage(xc, yc, message):
+	pass
+
+def sendRandomWalk(xc, yc, message):
 	pass
 
 if __name__ == "__main__":
+	global_publisher = rospy.Publisher("centerDrone")
 	sys.exit(main())

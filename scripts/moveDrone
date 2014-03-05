@@ -20,8 +20,10 @@ def main(argv=None):
 		argv = sys.argv
 
 	rospy.init_node('moveDrone')
+	sub = rospy.Subscriber('centerDrone', moveCallback, DFDVelocity)
 	rospy.spin()
 
+def moveCallback(velocity):
 	pass
 
 if __name__ == "__main__":
