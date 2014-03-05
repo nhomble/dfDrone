@@ -13,6 +13,7 @@ import time
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
 from sensor_msgs.msg import Image
+from std_msgs.msg import Float64MultiArray
 
 # opencv and simplecv modules
 import cv
@@ -22,7 +23,7 @@ import SimpleCV
 
 # my modules
 import detectDrone
-# TODO import custom message
+# TODO from ..msg import DFDMessage
 
 # I need this object to persist over ros spins
 global_detector = None
@@ -31,7 +32,7 @@ global_publisher = None
 # TimeSequencer is not available for python... dumb
 global_depth = None
 global_color = None
-global_getColor = True
+global_getColor = False
 
 # ROS loop
 def main(argv=None):
@@ -40,13 +41,11 @@ def main(argv=None):
 
 	rospy.init_node('startNode')
 	rospy.loginfo("startDrone has initialized")
-	
-	if global_getColor is True:
-		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
-	else:
-		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
 
-	rospy.spin()
+	while True:	
+		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
+		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+		rospy.sleep(100)
 
 def depthCallback(image):
 	rospy.loginfo("depth callback in startDrone")
@@ -74,15 +73,17 @@ def processImage(colorImage, depthImage):
         color = SimpleCV.Image(colorFrame, cv2image=True)
 	depth = SimpleCV.Image(colorFrame, cv2image=True)
 	
+	# create message - ugly since I do not have my custom message
 	message = global_detector.process(color, depth)	
+	messageToSend = Float64MultiArray()
+	messageToSend = [boolean, message.x, message.y, message.z, message.width, message.height]
 
-	# TODO make sure this works
-	global_publisher.publish(message)
+	global_publisher.publish(messageToSend)
 
 if __name__ == "__main__":
 	# create detector with no debug option
 	global_detector = detectDrone.Detector(False)
-	global_publisher = rospy.Publisher("dfdMessenger", DFDMessage)
+	global_publisher = rospy.Publisher("startDrone", Float64MultiArray)
 	try:
 		sys.exit(main())
 	except rospy.ROSInterruptException:
