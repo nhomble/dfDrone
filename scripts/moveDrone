@@ -8,6 +8,10 @@ import roslib; roslib.load_manifest('dfDrone')
 import rospy
 import tf.transformations
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64MultiArray
+
+# my modules
+import velocityDrone
 
 '''
 subscribe to centerDrone and given the
@@ -25,6 +29,17 @@ def main(argv=None):
 	rospy.spin()
 
 def moveCallback(velocity):
+	vel = velocityDrone((velocity[0] == 1.0), velocity[1], velocity[2], velocity[3], velocity[4])
+	if vel.isPresent is True:
+		move(velocity)
+	else:
+		randomWalk()
+	pass
+
+def randomWalk():
+	pass
+
+def move(vel):
 	pass
 
 if __name__ == "__main__":
