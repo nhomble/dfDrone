@@ -20,6 +20,7 @@ def main(argv=None):
 		argv = sys.argv
 
 	rospy.init_node('moveDrone')
+	rospy.logIfo("\t\tmoveDrone has initialized")
 	sub = rospy.Subscriber('centerDrone', moveCallback, DFDVelocity)
 	rospy.spin()
 
