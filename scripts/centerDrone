@@ -2,9 +2,14 @@
 
 '''
 Subscribe to startDrone for the centroids and then
-determine how then determine how the turtlebot should react
-(including random movement) and then publish the information
-for moveDrone
+determine the change in (x, y) to recenter the drone. 
+The node is also provides the quickness of each new point
+to give moveDrone a sense of how fast it must react
+
+The reason we want this node inbetween startDrone and moveDrone
+is the fact that I may get a number of false-negatives inbetween
+some number of images. This node will require consecutive detections
+to be false until randomWalk is initiated.
 '''
 
 # python built-ins
@@ -23,7 +28,6 @@ import velocityDrone
 
 # globals, need to remember previous 
 global_publisher = None
-
 global_last_time = None
 
 # in case I do not see the drone
@@ -59,7 +63,7 @@ def centroidCallback(message):
 		# currently let's just center
 
 		# rotate for delX, move linearly for delY
-		sendVelocityMessage(xCenter, yCenter, message)
+		sendVelocityMessage(xCenter, yCenter, message, delT)
 	else:
 		rospy.logInfo("\tnegative callback in centerDrone")
 		global_miss += 1	
@@ -70,11 +74,17 @@ def centroidCallback(message):
 
 	global_last_time = time.gmtime()
 
-def sendVelocityMessage(xc, yc, message):
-	pass
+# simply just report the difference of the detected centroid and 
+def sendVelocityMessage(xc, yc, DFDMessage, delT):
+	vel = velocityDrone.DFDVelocity(True, DFDMessage.x - xc, DFDMessage.y - yc, DFDMessage.z, delT)
+	arrMessage = [1.0, vel.delX, vel.delY, vel.z, vel.delay]
+	global_publisher.publish(arrMessage)
 
-def sendRandomWalk(xc, yc, message):
-	pass
+# empty velocity
+def sendRandomWalk(xc, yc, DFDMessage):
+	vel = velocityDrone.DFDVelocity(False, None, None, None, None)
+	arrMessage = [0.0, vel.delX, vel.delY, vel.z, vel.delay]
+	global_publisher.publish(arrMessage)
 
 if __name__ == "__main__":
 	global_publisher = rospy.Publisher("centerDrone")
