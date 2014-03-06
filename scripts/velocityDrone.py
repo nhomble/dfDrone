@@ -3,9 +3,14 @@
 # TODO, translate into ROS
 
 class DFDVelocity():
-	def __init__(self, flag, linear, rotational, delay):
+	def __init__(self, flag, delx, dely, z, delay):
 		self.isPresent = flag
+		self.delX = None
+		self.delY = None
+		self.z = None
+		sel.delay = None
 		if self.isPresent is True:
-			self.linear = linear
-			self.rotational = rotational
+			self.delX = delx
+			self.delY = dely
+			self.z = z
 			sel.delay = delay
