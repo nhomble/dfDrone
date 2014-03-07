@@ -8,7 +8,7 @@ class DFDVelocity():
 		self.delX = None
 		self.delY = None
 		self.z = None
-		sel.delay = None
+		self.delay = None
 		if self.isPresent is True:
 			self.delX = delx
 			self.delY = dely
