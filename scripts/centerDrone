@@ -87,5 +87,5 @@ def sendRandomWalk(xc, yc, DFDMessage):
 	global_publisher.publish(arrMessage)
 
 if __name__ == "__main__":
-	global_publisher = rospy.Publisher("centerDrone")
+	global_publisher = rospy.Publisher("centerDrone", Float64MultiArray)
 	sys.exit(main())
