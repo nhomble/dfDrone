@@ -32,35 +32,36 @@ global_publisher = None
 # TimeSequencer is not available for python... dumb
 global_depth = None
 global_color = None
-global_getColor = False
 
 # ROS loop
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
-	rospy.init_node('startNode')
+	rospy.init_node('startDrone')
 	rospy.loginfo("startDrone has initialized")
 
-	while True:	
-		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
-		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
-		rospy.sleep(100)
+#	getColor = False
+#	if getColor is False:
+#		getColor = True
+#		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
+#	else:
+#		getColor = False
+#		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+	color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+	rospy.spin()
 
 def depthCallback(image):
 	rospy.loginfo("depth callback in startDrone")
-	global_getColor = True
 	global_depth = image
-	
-	if global_color is not None and global_depth is not None:
-		processImage(global_color, global_depth)
+#	if global_color is not None and global_depth is not None:
+#		processImage(global_color, global_depth)
 
 def colorCallback(image):
 	rospy.loginfo("color callback in startDrone")
-	global_getColor = False
 	global_color = image
 
-	if global_color is not None and global_depth is not None:
+	if global_color is not None:
 		processImage(global_color, global_depth)
 
 # upon getting BOTH a new color and depth image call this callback
@@ -69,9 +70,12 @@ def processImage(colorImage, depthImage):
 
         b = CvBridge()
         colorFrame = b.imgmsg_to_cv(colorImage, "bgr8")
-	depthFrame = b.imgmsg_to_cv(depthImage, "32fc1")
         color = SimpleCV.Image(colorFrame, cv2image=True)
-	depth = SimpleCV.Image(colorFrame, cv2image=True)
+	depth = None
+
+	if depthImage is not None:
+		depthFrame = b.imgmsg_to_cv(depthImage, "32fc1")
+		depth = SimpleCV.Image(colorFrame, cv2image=True)
 	
 	# create message - ugly since I do not have my custom message
 	message = global_detector.process(color, depth)	

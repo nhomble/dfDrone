@@ -24,13 +24,18 @@ class Detector():
 	# we determine if we see a drone in the image
 	# if we see the image, then we determine the delta(x, y, z)
 	def process(self, img, depth):
-		if (img is None or depth is None) and self.debug is False:
+		if (img is None) and self.debug is False:
 			return messageDrone.DFDMessage(False, None, None, None)
 
 		self.min_blob_size = .05 * img.height
 		self.max_blob_size = .7 * img.height
-		
-		isFound, centroid, z = self.hasDrone(img, depth)
+	
+		if depth is None:
+			isFound, centroid = self.hasDroneAux(img)
+			z = 100
+		else:	
+			isFound, centroid, z = self.hasDrone(img, depth)
+
 		message = messageDrone.DFDMessage(isFound, centroid, z, img.width, img.height)
 		print(message.isPresent)
 		if isFound is True:
