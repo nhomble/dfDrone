@@ -43,7 +43,7 @@ class Detector():
 				print("FOUND")
 			
 			return message
-		return messageDrone.DFDMessage(False, None, None)
+		return messageDrone.DFDMessage(False, None, None, None, None)
 			
 
 	# return whether we got something, and return the centroid if possible
