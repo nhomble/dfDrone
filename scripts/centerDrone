@@ -77,14 +77,12 @@ def centroidCallback(message):
 # simply just report the difference of the detected centroid and 
 def sendVelocityMessage(xc, yc, DFDMessage, delT):
 	vel = velocityDrone.DFDVelocity(True, DFDMessage.x - xc, DFDMessage.y - yc, DFDMessage.z, delT)
-	arrMessage = [1.0, vel.delX, vel.delY, vel.z, vel.delay]
-	global_publisher.publish(arrMessage)
+	global_publisher.publish(vel.ros())
 
 # empty velocity
 def sendRandomWalk(xc, yc, DFDMessage):
 	vel = velocityDrone.DFDVelocity(False, None, None, None, None)
-	arrMessage = [0.0, vel.delX, vel.delY, vel.z, vel.delay]
-	global_publisher.publish(arrMessage)
+	global_publisher.publish(vel.ros())
 
 if __name__ == "__main__":
 	global_publisher = rospy.Publisher("centerDrone", Float64MultiArray)

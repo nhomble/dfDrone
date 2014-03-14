@@ -79,10 +79,7 @@ def processImage(colorImage, depthImage):
 	
 	# create message - ugly since I do not have my custom message
 	message = global_detector.process(color, depth)	
-	messageToSend = Float64MultiArray()
-	messageToSend = [(message.isPresent == 1.0), message.x, message.y, message.z, message.width, message.height]
-
-	global_publisher.publish(messageToSend)
+	global_publisher.publish(message.ros())
 
 if __name__ == "__main__":
 	# create detector with no debug option
