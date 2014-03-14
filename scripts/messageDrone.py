@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-# TODO, translate into ROS
+from std_msgs.msg import Float64MultiArray
 
 class DFDMessage():
 	def __init__(self, flag, centroid, z, w, h):
@@ -16,3 +16,25 @@ class DFDMessage():
 			self.z = z
 	def __str__(self):
 		return "" + self.isPresent
+	
+	def ros(self):
+		message = Float64MultiArray()
+		message.layout.dim[0].label = "centroid"
+		message.layout.dim[0].size = 5
+		message.layout.dim[0].stride = 1
+
+		message.layout.dim[1].label = "junk"
+		message.layout.dim[1].size = 0
+		message.layout.dim[1].stride = 0
+
+		message.layout.dim[2].label = "junk"
+		message.layout.dim[2].size = 0
+		message.layout.dim[3].size = 0
+
+		boolean = 0.0
+		if self.isPresent is True:
+			boolean = 1.0
+
+		message.data = [boolean, self.x, self.y, self.z, self.width, self.height]
+
+		return message
