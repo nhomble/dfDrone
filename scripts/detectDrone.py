@@ -221,11 +221,12 @@ def validCorners(corners, img):
 				continue
 			
 			if validRGB(c.meanColor()):
+				print(DEBUG_STRING + "valid rgb + " + str(c.meanColor()))
 				numValid += 1
 			else:
 				print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
 		# TODO should not hardcode
-		if numValid > 5 and numValid < 15:
+		if numValid > 5 and numValid < 20:
 			return True, corners
 		return False, None
 		 
