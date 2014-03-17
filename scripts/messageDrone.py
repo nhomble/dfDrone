@@ -1,6 +1,9 @@
 #!/usr/bin/env python2
 
-from std_msgs.msg import Float64MultiArray
+try:
+	from std_msgs.msg import Float64MultiArray
+except:
+	print("ROS installed? I could not import std_msgs in messageDrone")
 
 class DFDMessage():
 	def __init__(self, flag, centroid, z, w, h):
