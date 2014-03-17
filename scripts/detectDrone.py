@@ -12,7 +12,8 @@ import messageDrone
 
 # "ENUMS"
 MIN_DISTANCE = 150
-MIN_RGB = 110
+MIN_RGB = 100
+MAX_RGB = 140
 MIN_AREA = 20000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 # called by dfDrone to request information
@@ -183,7 +184,8 @@ def cropFromBlob(blob, image):
 # I want to detect black which inverted is white
 def validRGB(rgb):
 	if rgb[0] >= MIN_RGB and rgb[1] >= MIN_RGB and rgb[2] >= MIN_RGB:
-		return True
+		if rgb[0] <= MAX_RGB and rgb[1] <= MAX_RGB and rgb[2] <= MAX_RGB:
+			return True
 	
 	return False
 
@@ -221,7 +223,7 @@ def validCorners(corners, img):
 				continue
 			
 			if validRGB(c.meanColor()):
-				print(DEBUG_STRING + "valid rgb + " + str(c.meanColor()))
+				print(DEBUG_STRING + " valid rgb + " + str(c.meanColor()))
 				numValid += 1
 			else:
 				print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
