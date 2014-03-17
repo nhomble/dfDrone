@@ -10,6 +10,11 @@ import SimpleCV
 # my modules
 import messageDrone
 
+# "ENUMS"
+MIN_DISTANCE = 150
+MIN_RGB = 110
+MIN_AREA = 20000
+DEBUG_STRING = "\t[DRONE_DETECT]"
 # called by dfDrone to request information
 class Detector():
 	def __init__(self, debug):
@@ -27,8 +32,8 @@ class Detector():
 		if (img is None) and self.debug is False:
 			return messageDrone.DFDMessage(False, None, None, None)
 
-		self.min_blob_size = .05 * img.height
-		self.max_blob_size = .7 * img.height
+		self.min_blob_size = .05 * img.height * img.width
+		self.max_blob_size = .7 * img.height * img.width
 	
 		if depth is None:
 			isFound, centroid = self.hasDroneAux(img)
@@ -40,7 +45,7 @@ class Detector():
 		print(message.isPresent)
 		if isFound is True:
 			if self.debug is True:
-				print("FOUND")
+				print(DEBUG_STRING + " FOUND")
 			
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, None)
@@ -76,6 +81,7 @@ class Detector():
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
+			print(DEBUG_STRING + " no blobs to look at")
 			return False, None
 
 		for b in blobs:
@@ -90,7 +96,7 @@ class Detector():
 
 			if self.isValid(cropped, centroid):
 
-				if cropped.area() > 20000 and len(blobs) > 1:
+				if cropped.area() > MIN_AREA and len(blobs) > 1:
 					return self.hasDroneAux(cropped)
 				# TODO hardcode
 				self.foundBlobs.append(b)
@@ -102,10 +108,12 @@ class Detector():
 	# TODO
 	def isValid(self, cropped, centroid):
 		if cropped is None:
+			print(DEBUG_STRING + " nothing in crop")
 			return False
 		# because of the frame of the drone I should see SOME corners
 		flag, corners = getCorners(cropped)
 		if flag is False:
+			print(DEBUG_STRING + " no corners")
 			return False
 
 		if self.debug is True:
@@ -174,8 +182,9 @@ def cropFromBlob(blob, image):
 
 # I want to detect black which inverted is white
 def validRGB(rgb):
-	if rgb[0] >= 100 and rgb[1] >= 100 and rgb[2] >= 100:
+	if rgb[0] >= MIN_RGB and rgb[1] >= MIN_RGB and rgb[2] >= MIN_RGB:
 		return True
+	
 	return False
 
 '''
@@ -207,11 +216,14 @@ def validCorners(corners, img):
 			dist = distanceFromCenter(c, img)
 			# print(dist)
 			# TODO I should not hardcode this value
-			if dist > 75:
+			if dist > MIN_DISTANCE:
+				print("" + DEBUG_STRING + " corner is too far from center " + str(dist))
 				continue
 			
 			if validRGB(c.meanColor()):
 				numValid += 1
+			else:
+				print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
 		# TODO should not hardcode
 		if numValid > 5 and numValid < 15:
 			return True, corners
@@ -232,7 +244,7 @@ def distanceFromCenter(obj, img):
 	distance = math.sqrt(distance)
 
 	return distance
-
+ 
 '''
 the following are wrappers of simplecv feature detection functions
 here I wanted to draw the features when found for debugging purposes
@@ -255,7 +267,7 @@ def getBlobs(img, bMin, bMax):
 	try:
 		blobs = img.findBlobs(minsize=bMin, maxsize=bMax)
 	except:
-		print("find blobs complained")
+		print("" + DEBUG_STRING + " find blobs complained")
 #	if(blobs is not None):
 #		blobs.draw()
 	return blobs
