@@ -9,7 +9,7 @@ import roslib; roslib.load_manifest('dfDrone')
 import rospy
 import tf.transformations
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import *
 
 # my modules
 import velocityDrone
@@ -38,11 +38,11 @@ def moveCallback(velocity):
 	if vel.isPresent is True:
 		move(velocity)
 	else:
-		2bit = random.randInt(0, 3)
-		rospy.logInfo("\t\trandom walk " + str(2bit))
+		twoBit = random.randInt(0, 3)
+		rospy.logInfo("\t\trandom walk " + str(twoBit))
 	
 		options = {0:r0, 1:r1, 2:r2, 3:r3}
-		options[2bit]()
+		options[twoBit]()
 		
 		rospy.sleep(1)
 		twist = Twist()

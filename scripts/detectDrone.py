@@ -16,10 +16,12 @@ MIN_RGB = 100
 MAX_RGB = 140
 MIN_AREA = 20000
 DEBUG_STRING = "\t[DRONE_DETECT]"
+DEBUG = False
 # called by dfDrone to request information
 class Detector():
 	def __init__(self, debug):
 		self.debug = debug
+		DEBUG = self.debug
 
 		self.min_blob_size = None
 		self.max_blob_size = None
@@ -83,7 +85,7 @@ class Detector():
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			print(DEBUG_STRING + " no blobs to look at")
-			return False, None
+		return False, None
 
 		for b in blobs:
 			centroid = b.centroid()
@@ -219,14 +221,17 @@ def validCorners(corners, img):
 			# print(dist)
 			# TODO I should not hardcode this value
 			if dist > MIN_DISTANCE:
-				print("" + DEBUG_STRING + " corner is too far from center " + str(dist))
+				if DEBUG is True:
+					print("" + DEBUG_STRING + " corner is too far from center " + str(dist))
 				continue
 			
 			if validRGB(c.meanColor()):
-				print(DEBUG_STRING + " valid rgb + " + str(c.meanColor()))
+				if DEBUG is True:
+					print(DEBUG_STRING + " valid rgb + " + str(c.meanColor()))
 				numValid += 1
 			else:
-				print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
+				if DEBUG is True:
+					print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
 		# TODO should not hardcode
 		if numValid > 5 and numValid < 20:
 			return True, corners
