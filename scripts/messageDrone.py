@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 try:
-	from std_msgs.msg import Float64MultiArray
+	from std_msgs.msg import Float64MultiArray, MultiArrayDimension, MultiArrayLayout
 except:
 	print("ROS installed? I could not import std_msgs in messageDrone")
 
@@ -22,17 +22,12 @@ class DFDMessage():
 	
 	def ros(self):
 		message = Float64MultiArray()
-		message.layout.dim[0].label = "centroid"
-		message.layout.dim[0].size = 5
-		message.layout.dim[0].stride = 1
+		message.layout = MultiArrayLayout()
+		message.layout.dim = MultiArrayDimension()
 
-		message.layout.dim[1].label = "junk"
-		message.layout.dim[1].size = 0
-		message.layout.dim[1].stride = 0
-
-		message.layout.dim[2].label = "junk"
-		message.layout.dim[2].size = 0
-		message.layout.dim[3].size = 0
+		message.layout.dim.label = "centroid"
+		message.layout.dim.size = 5
+		message.layout.dim.stride = 1
 
 		boolean = 0.0
 		if self.isPresent is True:
