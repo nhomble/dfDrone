@@ -18,7 +18,7 @@ def main(argv=None):
 		img = cam.getImage()
 
 		message = detector.process(img, None)
-		if hasDrone is True:
+		if message.isPresent is True:
 			print(message.x, message.y)
 
 if __name__ == "__main__":
