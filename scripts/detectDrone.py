@@ -39,7 +39,7 @@ class Detector():
 		self.max_blob_size = .7 * img.height * img.width
 	
 		if depth is None:
-			isFound, centroid = self.hasDroneAux(img)
+			isFound, centroid = self.hasDroneAux(img, 0)
 			z = 100
 		else:	
 			isFound, centroid, z = self.hasDrone(img, depth)
@@ -76,16 +76,16 @@ class Detector():
 					return tValid, tCentroid, dep
 			return False, None, None
 		else:
-			v, c = self.hasDroneAux(img)
+			v, c = self.hasDroneAux(img, 0)
 			return v, c, None
 
 	# helper function to see if an ARDRone is in an image by RGB
-	def hasDroneAux(self, img):
+	def hasDroneAux(self, img, iterations):
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			print(DEBUG_STRING + " no blobs to look at")
-		return False, None
+			return False, None
 
 		for b in blobs:
 			centroid = b.centroid()
@@ -98,9 +98,11 @@ class Detector():
 				continue
 
 			if self.isValid(cropped, centroid):
-
 				if cropped.area() > MIN_AREA and len(blobs) > 1:
-					return self.hasDroneAux(cropped)
+					if iterations < 3:
+						if self.debug is True:
+							print(DEBUG_STRING + "recurse detection")
+						return self.hasDroneAux(cropped, iterations + 1)
 				# TODO hardcode
 				self.foundBlobs.append(b)
 				return True, centroid
