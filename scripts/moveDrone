@@ -12,7 +12,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
 
 # my modules
-import velocityDrone
+import messageDrone
 
 '''
 subscribe to centerDrone and given the
@@ -22,24 +22,25 @@ twist messages
 
 global_cmd_pub = None
 
+DEBUG_STRING = "\t\t[MOVE_DRONE] "
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
 	rospy.init_node('moveDrone')
-	rospy.loginfo("\t\tmoveDrone has initialized")
+	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
 	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
 	rospy.spin()
 
 # check whether or we actually have a velocity or I need to 
 # random walk
 def moveCallback(velocity):
-	vel = velocityDrone((velocity[0] == 1.0), velocity[1], velocity[2], velocity[3], velocity[4])
+	vel = messageDrone.DFDVelocity((velocity.data[0] == 1.0), velocity.data[1], velocity.data[2], velocity.data[3], velocity.data[4])
 	if vel.isPresent is True:
-		move(velocity)
+		move(vel)
 	else:
-		twoBit = random.randInt(0, 3)
-		rospy.loginfo("\t\trandom walk " + str(twoBit))
+		twoBit = random.randint(0, 3)
+		rospy.loginfo(DEBUG_STRING + "random walk " + str(twoBit))
 	
 		options = {0:r0, 1:r1, 2:r2, 3:r3}
 		options[twoBit]()
@@ -66,7 +67,7 @@ def r1():
 def r2():
 	rot = random.uniform(-3, 3)
 	twist = Twist()
-	twist.angular.z = vel
+	twist.angular.z = rot
 
 	global_cmd_pub.publish(twist)
 
@@ -78,19 +79,17 @@ def r3():
 # assume the last centroid was at the center of our view
 # must send rotational message first then linear message
 def move(vel):
-	rospy.loginfo("\t\tmove")
-
 	twist = Twist()
 	twist.linear.x = 2*vel.delY
 	global_cmd_pub.publish(twist)
-	rospy.loginfo("\t\tlinear movement")
+	rospy.loginfo(DEBUG_STRING + "linear movement")
 	rospy.sleep(vel.delay/2)
 
 	twist = Twist()
 	yDist = vel.delY * vel.delay
 	theta = Math.atab(yDist)
 	twist.angular.z = theta * 2 / vel.delay
-	rospy.loginfo("\t\tangular movement")
+	rospy.loginfo(DEBUG_STRING + "angular movement")
 	rospy.sleep(vel.delay/2)
 
 if __name__ == "__main__":

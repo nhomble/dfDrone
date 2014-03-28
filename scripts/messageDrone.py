@@ -16,7 +16,7 @@ class DFDVelocity():
 			self.delX = float(delx)
 			self.delY = float(dely)
 			self.z = float(z)
-			sel.delay = float(delay)
+			self.delay = float(delay)
 
 	def ros(self):
 		message = Float64MultiArray()

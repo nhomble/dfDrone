@@ -17,6 +17,7 @@ MAX_RGB = 140
 MIN_AREA = 20000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 DEBUG = False
+
 # called by dfDrone to request information
 class Detector():
 	def __init__(self, debug):
@@ -45,7 +46,7 @@ class Detector():
 			isFound, centroid, z = self.hasDrone(img, depth)
 
 		message = messageDrone.DFDMessage(isFound, centroid, z, img.width, img.height)
-		print(message.isPresent)
+		print(DEBUG_STRING + " " + str(message.isPresent))
 		if isFound is True:
 			if self.debug is True:
 				print(DEBUG_STRING + " FOUND")
@@ -70,6 +71,7 @@ class Detector():
 				cropped = cropFromBlobs(obj, img)
 				
 				tValid, tCentroid= self.hasDroneAux(cropped)
+				return tValid, tCentroid, dep
 				if tValid is True:
 					dep = depth.getPixel(tCentroid[0], tCentroid[1])
 					# calibrate dep TODO
