@@ -1,6 +1,5 @@
 <launch>
-	<node pkg="dfDrone" name="moveDrone" required="true" type="moveDrone" output="screen">
-		<remap from="moveDrone/cmd_vel" to="cmd_vel_mux/input/teleop"/></node>
+	<node pkg="dfDrone" name="moveNode" required="true" type="moveDrone" output="screen"></node>
 
 	<node pkg="dfDrone" name="centerNode" required="true" type="centerDrone" output="screen"></node>
 
