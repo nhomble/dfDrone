@@ -26,12 +26,12 @@ from std_msgs.msg import Float64MultiArray
 import messageDrone
 
 # globals, need to remember previous 
-global_publisher = None
-global_last_time = None
-global_last_centroid = None
+g_publisher = None
+g_last_time = None
+g_last_centroid = None
 # in case I do not see the drone
 # I keep track of how many bad "packets"
-global_miss = 0
+g_miss = 0
 MISS_MAX = 10
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
@@ -49,16 +49,16 @@ def centroidCallback(message):
 	rospy.loginfo(DEBUG_STRING + "centroid callback in centerDrone")
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5])
 
-	global global_last_time
-	global global_last_centroid
-	global global_miss
+	global g_last_time
+	global g_last_centroid
+	global g_miss
 
-	if global_last_time is None or global_last_centroid is None:
-		global_last_centroid = message
-		global_last_time = time.time()
+	if g_last_time is None or g_last_centroid is None:
+		g_last_centroid = message
+		g_last_time = time.time()
 		pass
 
-	delT = time.time() - global_last_time
+	delT = time.time() - g_last_time
 
 	xCenter = message.width/2
 	yCenter = message.height/2
@@ -66,30 +66,30 @@ def centroidCallback(message):
 	if message.isPresent is True:
 		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		# currently let's just center
-		global_miss = 0
+		g_miss = 0
 
 		# rotate for delX, move linearly for delY
 		sendVelocityMessage(xCenter, yCenter, message, delT)
 	else:
 		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
-		rospy.loginfo(DEBUG_STRING + "misses: " + str(global_miss))
-		global_miss += 1	
-		if global_miss > MISS_MAX:
+		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
+		g_miss += 1	
+		if g_miss > MISS_MAX:
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(xCenter, yCenter, message)
 
-	global_last_time = time.time()
+	g_last_time = time.time()
 
 # simply just report the difference of the detected centroid and 
 def sendVelocityMessage(xc, yc, DFDMessage, delT):
 	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xc, DFDMessage.y - yc, DFDMessage.z, delT)
-	global_publisher.publish(vel.ros())
+	g_publisher.publish(vel.ros())
 
 # empty velocity
 def sendRandomWalk(xc, yc, DFDMessage):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
-	global_publisher.publish(vel.ros())
+	g_publisher.publish(vel.ros())
 
 if __name__ == "__main__":
-	global_publisher = rospy.Publisher("centerDrone", Float64MultiArray)
+	g_publisher = rospy.Publisher("centerDrone", Float64MultiArray)
 	sys.exit(main())
