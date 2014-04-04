@@ -124,7 +124,6 @@ class Detector():
 
 	# ok now I have a black blob, let's be clever
 	# check area - check hue peaks
-	# TODO
 	def isValid(self, cropped, centroid):
 		if cropped is None:
 			print(DEBUG_STRING + " nothing in crop")
@@ -135,6 +134,10 @@ class Detector():
 			print(DEBUG_STRING + " no corners")
 			return False
 
+		if validRGB(cropped.meanColor()):
+			print(DEBUG_STRING + " average color of blob is not valid")
+			return False
+
 		if self.debug is True:
 			for c in corners:
 				c.draw()
@@ -142,14 +145,12 @@ class Detector():
 			time.sleep(2)
 		return True
 
-	# TODO fix
 	def blobAlreadySeen(self, blob):
-		return False
 		counter = 0
 		for b in self.foundBlobs:
-			# not sure how precise TODO
 			if b.match(blob) < 10:
 				# like splay
+				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))
 				return True
 			counter += 1
 		return False
