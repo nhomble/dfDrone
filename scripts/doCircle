@@ -7,6 +7,7 @@ import rospy
 import tf.transformations
 from geometry_msgs.msg import Twist
 
+# 1 full rotation, at speed 2.5, times
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
@@ -16,14 +17,12 @@ def main(argv=None):
 	
 	rospy.loginfo("about to circle")
 
-	for i in range(10):
+	for i in range(2):
 		twist = Twist()
-		twist.angular.y = 1
-		twist.angular.z = 1
-
+		twist.angular.z = 9
 		p.publish(twist)
 		rospy.sleep(1)
-		rospy.loginfo("moving")
+	rospy.loginfo("moving")
 	rospy.loginfo("stopping")
 	twist = Twist()
 	p.publish(twist)
