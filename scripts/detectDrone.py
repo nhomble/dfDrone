@@ -27,6 +27,9 @@ class Detector():
 		self.min_blob_size = None
 		self.max_blob_size = None
 	
+		self.width = None
+		self.height = None
+
 		# use previously found blobs and compare!!!
 		self.foundBlobs = []
 
@@ -35,6 +38,9 @@ class Detector():
 	def process(self, img, depth):
 		if (img is None) and self.debug is False:
 			return messageDrone.DFDMessage(False, None, None, None)
+
+		self.width = img.width
+		self.height = img.height
 
 		self.min_blob_size = .05 * img.height * img.width
 		self.max_blob_size = .7 * img.height * img.width
@@ -50,6 +56,8 @@ class Detector():
 		if isFound is True:
 			if self.debug is True:
 				print(DEBUG_STRING + " FOUND")
+				print(DEBUG_STRING + " " + str(message.x) + " " + str(message.y))
+				print(DEBUG_STRING + " " + str(self.width) + " " + str(self.height))
 			
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, None)
@@ -99,15 +107,19 @@ class Detector():
 			if cropped is None:
 				continue
 
+			# ignore bad bloba
 			if self.isValid(cropped, centroid):
-				if cropped.area() > MIN_AREA and len(blobs) > 1:
-					if iterations < 3:
-						if self.debug is True:
-							print(DEBUG_STRING + "recurse detection")
-						return self.hasDroneAux(cropped, iterations + 1)
-				# TODO hardcode
+				# if cropped.area() > MIN_AREA and len(blobs) > 1:
 				self.foundBlobs.append(b)
 				return True, centroid
+				# hmm it is suspiciously large
+				# else:	
+				#	if iterations < 3:
+				#		if self.debug is True:
+				#			print(DEBUG_STRING + " recurse detection")
+				#		tFlag, tCent = self.hasDroneAux(cropped, iterations + 1)
+				#		if tFlag is False:
+				#			return True, centroid
 		return False, None
 
 	# ok now I have a black blob, let's be clever
