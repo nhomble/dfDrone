@@ -23,6 +23,9 @@ twist messages
 g_cmd_pub = None
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
+
+# just define a global delay
+DELAY = 1
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
@@ -48,6 +51,7 @@ def moveCallback(velocity):
 		rospy.sleep(1)
 		twist = Twist()
 		g_cmd_pub.publish(twist)
+
 # 4 possibilities
 #	0: linear movement, no rotational movement
 #	1: no linear movement, no rotational movement
@@ -73,24 +77,26 @@ def r2():
 
 def r3():
 	r0()
-	rospy.sleep(1)
+	rospy.sleep(DELAY/2)
 	r2()
 
 # assume the last centroid was at the center of our view
 # must send rotational message first then linear message
+
+# 4 rotations at rot.y = 2.5 equals one full circle
 def move(vel):
 	twist = Twist()
 	twist.linear.x = 2*vel.delY
 	g_cmd_pub.publish(twist)
 	rospy.loginfo(DEBUG_STRING + "linear movement")
-	rospy.sleep(vel.delay/2)
+	rospy.sleep(DELAY)
 
 	twist = Twist()
 	yDist = vel.delY * vel.delay
 	theta = Math.atab(yDist)
 	twist.angular.z = theta * 2 / vel.delay
 	rospy.loginfo(DEBUG_STRING + "angular movement")
-	rospy.sleep(vel.delay/2)
+	rospy.sleep(DELAY)
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)

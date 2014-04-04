@@ -59,16 +59,13 @@ def centroidCallback(message):
 		pass
 
 	delT = time.time() - g_last_time
-
 	xCenter = message.width/2
 	yCenter = message.height/2
 
 	if message.isPresent is True:
 		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
-		# currently let's just center
 		g_miss = 0
 
-		# rotate for delX, move linearly for delY
 		sendVelocityMessage(xCenter, yCenter, message, delT)
 	else:
 		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
