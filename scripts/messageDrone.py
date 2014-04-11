@@ -8,29 +8,34 @@ except:
 class DFDVelocity():
 	def __init__(self, flag, delx, dely, z, delay):
 		self.isPresent = flag
-		self.delX = 0.0
-		self.delY = 0.0
+		self.x = 0.0
+		self.y = 0.0
 		self.z = 0.0
 		self.delay = 0.0
 		if self.isPresent is True:
-			self.delX = float(delx)
-			self.delY = float(dely)
+			self.x = float(delx)
+			self.y = float(dely)
 			self.z = float(z)
 			self.delay = float(delay)
 
-	def ros(self):
+	def move(self):
 		message = Float64MultiArray()
 		
 		boolean = 0.0
 		if self.isPresent is True:
 			boolean = 1.0
 
-		message.data = [boolean, self.delX, self.delY, self.z, self.delay]
+		message.data = [boolean, self.x, self.y, self.z, self.delay]
 
+		return message
+
+	def follower(self):
+		message = Float64MultiArray()
+		message.data = [self.x, self.y, self.z]
 		return message
 	
 class DFDMessage():
-	def __init__(self, flag, centroid, z, w, h):
+	def __init__(self, flag, centroid, z, area, w, h):
 		self.isPresent = flag
 	
 		if (w and h) is not None:
@@ -42,10 +47,12 @@ class DFDMessage():
 		self.x = 0.0
 		self.y = 0.0
 		self.z = 0.0
+		self.area = 0.0
 		if self.isPresent is True:
 			self.x = centroid[0]
 			self.y = centroid[1]
 			self.z = z
+			self.area = area
 	def __str__(self):
 		return "" + self.isPresent
 	
@@ -56,6 +63,6 @@ class DFDMessage():
 		if self.isPresent is True:
 			boolean = 1.0
 
-		message.data = [boolean, self.x, self.y, self.z, self.width, self.height]
+		message.data = [boolean, self.x, self.y, self.z, self.area, self.width, self.height]
 
 		return message

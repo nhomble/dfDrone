@@ -21,6 +21,7 @@ twist messages
 '''
 
 g_cmd_pub = None
+g_tFollower = None
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
@@ -100,4 +101,5 @@ def move(vel):
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)
+	g_tFollower = rospy.Publisher('../bin/follower', Float64MultiArray)
 	sys.exit(main())

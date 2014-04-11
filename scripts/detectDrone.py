@@ -51,7 +51,7 @@ class Detector():
 		else:	
 			isFound, centroid, z = self.hasDrone(img, depth)
 
-		message = messageDrone.DFDMessage(isFound, centroid, z, img.width, img.height)
+		message = messageDrone.DFDMessage(isFound, centroid, z, area, img.width, img.height)
 		print(DEBUG_STRING + " " + str(message.isPresent))
 		if isFound is True:
 			if self.debug is True:
@@ -60,7 +60,7 @@ class Detector():
 				print(DEBUG_STRING + " " + str(self.width) + " " + str(self.height))
 			
 			return message
-		return messageDrone.DFDMessage(False, None, None, None, None)
+		return messageDrone.DFDMessage(False, None, None, None, None, None)
 			
 
 	# return whether we got something, and return the centroid if possible
@@ -86,8 +86,8 @@ class Detector():
 					return tValid, tCentroid, dep
 			return False, None, None
 		else:
-			v, c = self.hasDroneAux(img, 0)
-			return v, c, None
+			v, c, area = self.hasDroneAux(img, 0)
+			return v, c, area
 
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img, iterations):
@@ -107,11 +107,11 @@ class Detector():
 			if cropped is None:
 				continue
 
-			# ignore bad bloba
+			# ignore bad blobs
 			if self.isValid(cropped, centroid):
 				# if cropped.area() > MIN_AREA and len(blobs) > 1:
 				self.foundBlobs.append(b)
-				return True, centroid
+				return True, centroid, b.area()
 				# hmm it is suspiciously large
 				# else:	
 				#	if iterations < 3:
@@ -120,7 +120,7 @@ class Detector():
 				#		tFlag, tCent = self.hasDroneAux(cropped, iterations + 1)
 				#		if tFlag is False:
 				#			return True, centroid
-		return False, None
+		return False, None, None
 
 	# ok now I have a black blob, let's be clever
 	# check area - check hue peaks

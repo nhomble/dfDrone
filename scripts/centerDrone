@@ -10,6 +10,10 @@ The reason we want this node inbetween startDrone and moveDrone
 is the fact that I may get a number of false-negatives inbetween
 some number of images. This node will require consecutive detections
 to be false until randomWalk is initiated.
+
+UPDATE:
+So I should use the turtlebot follower to actually follow the drone. So
+this node will publish to
 '''
 
 # python built-ins
@@ -26,7 +30,8 @@ from std_msgs.msg import Float64MultiArray
 import messageDrone
 
 # globals, need to remember previous 
-g_publisher = None
+g_follower = None
+g_move = None
 g_last_time = None
 g_last_centroid = None
 # in case I do not see the drone
@@ -47,7 +52,7 @@ def main(argv=None):
 
 def centroidCallback(message):
 	rospy.loginfo(DEBUG_STRING + "centroid callback in centerDrone")
-	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5])
+	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
 
 	global g_last_time
 	global g_last_centroid
@@ -59,14 +64,13 @@ def centroidCallback(message):
 		pass
 
 	delT = time.time() - g_last_time
-	xCenter = message.width/2
-	yCenter = message.height/2
+	newZ = getZPosition(message.area)
 
 	if message.isPresent is True:
 		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		g_miss = 0
 
-		sendVelocityMessage(xCenter, yCenter, message, delT)
+		sendVelocityMessage(xCenter, yCenter, message, delT, newZ)
 	else:
 		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
 		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
@@ -77,16 +81,26 @@ def centroidCallback(message):
 
 	g_last_time = time.time()
 
-# simply just report the difference of the detected centroid and 
-def sendVelocityMessage(xc, yc, DFDMessage, delT):
-	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xc, DFDMessage.y - yc, DFDMessage.z, delT)
-	g_publisher.publish(vel.ros())
+# so given the area of the turtlebot_blob
+# I am going to guess about how far I am from the 
+# ARDrone by the amount of area I see
+def getZPosition(area):
+	goalArea = 800
+	goalZ = 1.0
+	return goalZ * (goalArea//area)
+
+# not using all of the variables right now until I figure out what
+# turtlebot follower needs TODO
+def sendVelocityMessage(xc, yc, DFDMessage, delT, newZ):
+	vel = messageDrone.DFDVelocity(True, DFDMessage.x, DFDMessage.y, newZ, delT)
+	g_follower.publish(vel.follower())
 
 # empty velocity
 def sendRandomWalk(xc, yc, DFDMessage):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
-	g_publisher.publish(vel.ros())
+	g_move.publish(vel.move())
 
 if __name__ == "__main__":
-	g_publisher = rospy.Publisher("centerDrone", Float64MultiArray)
+	g_move = rospy.Publisher("centerDrone", Float64MultiArray)
+	g_follower = rospy.Publisher("../bin/follower", Float64MultiArray)
 	sys.exit(main())
