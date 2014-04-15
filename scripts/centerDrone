@@ -92,7 +92,7 @@ def getZPosition(area):
 	return goalZ * (goalArea//area)
 
 # not using all of the variables right now until I figure out what
-# turtlebot follower needs TODO
+# turtlebot follower
 def sendVelocityMessage(DFDMessage, delT, newZ):
 	vel = messageDrone.DFDVelocity(True, DFDMessage.x, DFDMessage.y, newZ, delT)
 	g_follower.publish(vel.ros())
@@ -109,6 +109,5 @@ def sendRandomWalk(width, height):
 	g_follower.publish(vel.ros())
 
 if __name__ == "__main__":
-	g_move = rospy.Publisher("centerDrone", Float64MultiArray)
-	g_follower = rospy.Publisher("../bin/follower", Float64MultiArray)
+	g_follower = rospy.Publisher("centerDrone", Float64MultiArray)
 	sys.exit(main())
