@@ -43,6 +43,7 @@
 
 #include <visualization_msgs/Marker.h>
 
+#include "std_msgs/Float64MultiArray.h"
 
 namespace turtlebot_follower
 {
@@ -128,7 +129,8 @@ private:
     cmdpub_ = private_nh.advertise<geometry_msgs::Twist> ("cmd_vel", 1);
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
-    sub_= nh.subscribe<PointCloud>("depth/points", 1, &TurtlebotFollower::cloudcb, this);
+    //sub_= nh.subscribe<PointCloud>("depth/points", 1, &TurtlebotFollower::cloudcb, this);
+    sub_ = nh.subscribe<Float64MultiArray>("centerDrone", 1, &TurtlebotFollower::move_callback, this);
 
     //Add for debug messages
     debugpub_ = nh.advertise<std_msgs::String>("debug", 1);
@@ -152,6 +154,25 @@ private:
     goal_z_ = config.goal_z;
     z_scale_ = config.z_scale;
     x_scale_ = config.x_scale;
+  }
+
+// reviewed the actual (vanilla) turtlebot follower code
+  void move_callback(const std_msgs::Float64MultiArray message)
+  {
+	x = message[0];
+	y = message[1];
+	z = message[2];
+      	ROS_DEBUG("Centroid at %f %f %f", x, y, z);
+      	publishMarker(x, y, z);
+
+	if (enabled_){
+  	      geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
+  	      cmd->linear.x = (z - goal_z_) * z_scale_;
+
+  	      cmd->angular.z = -x * x_scale_;
+
+  	      cmdpub_.publish(cmd);
+  	}
   }
 
   /*!
@@ -179,7 +200,7 @@ private:
     std::stringstream ss;
     std_msgs::String str;
     //Iterate through all the points in the region and find the average of the position
-    BOOST_FOREACH (const pcl::PointXYZ& pt, cloud->points)
+    /*BOOST_FOREACH (const pcl::PointXYZ& pt, cloud->points)
     {
       //First, ensure that the point's position is valid. This must be done in a separate
       //if because we do not want to perform comparison on a nan value.
@@ -221,7 +242,7 @@ private:
 
 
       }
-    }
+    }*/
 
     //If there are points, find the centroid and calculate the command goal.
     //If there are no points, simply publish a stop goal.
