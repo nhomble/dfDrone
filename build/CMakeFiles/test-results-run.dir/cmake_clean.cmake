@@ -1,4 +1,7 @@
 FILE(REMOVE_RECURSE
+  "../msg_gen"
+  "../msg_gen"
+  "../src/dfDrone/msg"
   "CMakeFiles/test-results-run"
 )
 

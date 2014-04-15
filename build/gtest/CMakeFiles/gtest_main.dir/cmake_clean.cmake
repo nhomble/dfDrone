@@ -1,7 +1,7 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
-  "/home/turtlebot/nicolas/dfDrone/lib/libgtest_main.pdb"
-  "/home/turtlebot/nicolas/dfDrone/lib/libgtest_main.so"
+  "/home/turtlebot/groovy_workspace/sandbox/dfDrone/lib/libgtest_main.pdb"
+  "/home/turtlebot/groovy_workspace/sandbox/dfDrone/lib/libgtest_main.so"
 )
 
 # Per-language clean rules from dependency scanning.

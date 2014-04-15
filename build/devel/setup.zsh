@@ -3,5 +3,5 @@
 
 CATKIN_SHELL=zsh
 emulate sh # emulate POSIX
-. "/home/turtlebot/nicolas/dfDrone/build/devel/setup.sh"
+. "/home/turtlebot/groovy_workspace/sandbox/dfDrone/build/devel/setup.sh"
 emulate zsh # back to zsh mode

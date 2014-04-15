@@ -1,5 +1,14 @@
 FILE(REMOVE_RECURSE
+  "../msg_gen"
+  "../msg_gen"
+  "../src/dfDrone/msg"
   "CMakeFiles/ROSBUILD_genmsg_lisp"
+  "../msg_gen/lisp/DFDMessage.lisp"
+  "../msg_gen/lisp/_package.lisp"
+  "../msg_gen/lisp/_package_DFDMessage.lisp"
+  "../msg_gen/lisp/DFDVelocity.lisp"
+  "../msg_gen/lisp/_package.lisp"
+  "../msg_gen/lisp/_package_DFDVelocity.lisp"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/turtlebot/nicolas/dfDrone/build/devel/setup.sh
+    local-name: /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/devel/setup.sh

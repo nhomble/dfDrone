@@ -1,4 +1,4 @@
 # generated from catkin/cmake/env-hooks/05.catkin-test-results.sh.develspace.in
 
-export CATKIN_TEST_RESULTS_DIR="/home/turtlebot/nicolas/dfDrone/build/test_results"
+export CATKIN_TEST_RESULTS_DIR="/home/turtlebot/groovy_workspace/sandbox/dfDrone/build/test_results"
 export ROS_TEST_RESULTS_DIR="$CATKIN_TEST_RESULTS_DIR"

@@ -6,7 +6,7 @@
 # Supported command line options:
 # --extend: skips the undoing of changes from a previously sourced setup file
 
-_SETUP_UTIL="/home/turtlebot/nicolas/dfDrone/build/devel/_setup_util.py"
+_SETUP_UTIL="/home/turtlebot/groovy_workspace/sandbox/dfDrone/build/devel/_setup_util.py"
 
 if [ ! -f "$_SETUP_UTIL" ]; then
   echo "Missing Python script: $_SETUP_UTIL"
