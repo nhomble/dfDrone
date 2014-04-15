@@ -24,7 +24,6 @@ import SimpleCV
 # my modules
 import detectDrone
 
-# I need this object to persist over ros spins
 g_detector = None
 g_publisher = None
 

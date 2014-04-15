@@ -12,24 +12,14 @@ class DFDVelocity():
 		self.y = 0.0
 		self.z = 0.0
 		self.delay = 0.0
+
 		if self.isPresent is True:
 			self.x = float(delx)
 			self.y = float(dely)
 			self.z = float(z)
 			self.delay = float(delay)
 
-	def move(self):
-		message = Float64MultiArray()
-		
-		boolean = 0.0
-		if self.isPresent is True:
-			boolean = 1.0
-
-		message.data = [boolean, self.x, self.y, self.z, self.delay]
-
-		return message
-
-	def follower(self):
+	def ros(self):
 		message = Float64MultiArray()
 		message.data = [self.x, self.y, self.z]
 		return message

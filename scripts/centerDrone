@@ -18,6 +18,7 @@ this node will publish to
 
 # python built-ins
 import math
+import random
 import sys
 import time
 
@@ -51,7 +52,6 @@ def main(argv=None):
 	rospy.spin()
 
 def centroidCallback(message):
-	rospy.loginfo(DEBUG_STRING + "centroid callback in centerDrone")
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
 
 	global g_last_time
@@ -64,20 +64,22 @@ def centroidCallback(message):
 		pass
 
 	delT = time.time() - g_last_time
-	newZ = getZPosition(message.area)
 
 	if message.isPresent is True:
 		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		g_miss = 0
 
-		sendVelocityMessage(xCenter, yCenter, message, delT, newZ)
+		newZ = getZPosition(message.area)
+
+		rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ))
+		sendVelocityMessage(message, delT, newZ)
 	else:
 		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
 		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
 		g_miss += 1	
 		if g_miss > MISS_MAX:
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
-			sendRandomWalk(xCenter, yCenter, message)
+			sendRandomWalk(message.width, message.height)
 
 	g_last_time = time.time()
 
@@ -85,20 +87,26 @@ def centroidCallback(message):
 # I am going to guess about how far I am from the 
 # ARDrone by the amount of area I see
 def getZPosition(area):
-	goalArea = 800
-	goalZ = 1.0
+	goalArea = 20000.0
+	goalZ = 10.0
 	return goalZ * (goalArea//area)
 
 # not using all of the variables right now until I figure out what
 # turtlebot follower needs TODO
-def sendVelocityMessage(xc, yc, DFDMessage, delT, newZ):
+def sendVelocityMessage(DFDMessage, delT, newZ):
 	vel = messageDrone.DFDVelocity(True, DFDMessage.x, DFDMessage.y, newZ, delT)
-	g_follower.publish(vel.follower())
+	g_follower.publish(vel.ros())
 
-# empty velocity
-def sendRandomWalk(xc, yc, DFDMessage):
+# random velocity
+# just give the turtlebot follower a random (x,y,z)
+def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
-	g_move.publish(vel.move())
+
+	vel.x = random.random() * width
+	vel.y = random.random() * height
+	vel.z = random.randint(0, 20) * 1.0
+	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
+	g_follower.publish(vel.ros())
 
 if __name__ == "__main__":
 	g_move = rospy.Publisher("centerDrone", Float64MultiArray)

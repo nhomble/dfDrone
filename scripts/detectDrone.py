@@ -45,9 +45,10 @@ class Detector():
 		self.min_blob_size = .05 * img.height * img.width
 		self.max_blob_size = .7 * img.height * img.width
 	
+		area = 0.0
+		z = 0.0
 		if depth is None:
-			isFound, centroid = self.hasDroneAux(img, 0)
-			z = 100
+			isFound, centroid, area = self.hasDroneAux(img)
 		else:	
 			isFound, centroid, z = self.hasDrone(img, depth)
 
@@ -56,11 +57,11 @@ class Detector():
 		if isFound is True:
 			if self.debug is True:
 				print(DEBUG_STRING + " FOUND")
-				print(DEBUG_STRING + " " + str(message.x) + " " + str(message.y))
-				print(DEBUG_STRING + " " + str(self.width) + " " + str(self.height))
-			
+				print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
+				print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
+				print(DEBUG_STRING + " Area:" + str(area))
 			return message
-		return messageDrone.DFDMessage(False, None, None, None, None, None)
+		return messageDrone.DFDMessage(False, None, None, None, img.width, img.height)
 			
 
 	# return whether we got something, and return the centroid if possible
@@ -90,17 +91,18 @@ class Detector():
 			return v, c, area
 
 	# helper function to see if an ARDRone is in an image by RGB
-	def hasDroneAux(self, img, iterations):
+	def hasDroneAux(self, img):
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			print(DEBUG_STRING + " no blobs to look at")
-			return False, None
+			return False, None, None
 
 		for b in blobs:
 			centroid = b.centroid()
+			area = b.area()
 			if self.blobAlreadySeen(b):
-				return True, centroid
+				return True, centroid, area
 			
 			cropped = cropFromBlob(b, img)
 
@@ -111,7 +113,7 @@ class Detector():
 			if self.isValid(cropped, centroid):
 				# if cropped.area() > MIN_AREA and len(blobs) > 1:
 				self.foundBlobs.append(b)
-				return True, centroid, b.area()
+				return True, centroid, area
 				# hmm it is suspiciously large
 				# else:	
 				#	if iterations < 3:
