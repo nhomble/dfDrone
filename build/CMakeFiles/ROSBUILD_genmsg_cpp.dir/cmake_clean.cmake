@@ -4,7 +4,6 @@ FILE(REMOVE_RECURSE
   "../src/dfDrone/msg"
   "CMakeFiles/ROSBUILD_genmsg_cpp"
   "../msg_gen/cpp/include/dfDrone/DFDMessage.h"
-  "../msg_gen/cpp/include/dfDrone/DFDVelocity.h"
 )
 
 # Per-language clean rules from dependency scanning.

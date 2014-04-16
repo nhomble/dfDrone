@@ -11,6 +11,20 @@ SET(CMAKE_FORCE_UNIX_PATHS 1)
 # The C and CXX include file search paths:
 SET(CMAKE_C_INCLUDE_PATH
   "/home/turtlebot/groovy_workspace/sandbox/dfDrone/include"
+  "/opt/ros/groovy/stacks/turtlebot_create/create_node/msg_gen/cpp/include"
+  "/opt/ros/groovy/stacks/turtlebot_create/create_node/srv_gen/cpp/include"
+  "/opt/ros/groovy/stacks/turtlebot/linux_hardware/msg_gen/cpp/include"
+  "/opt/ros/groovy/stacks/turtlebot/turtlebot_app_manager/msg_gen/cpp/include"
+  "/opt/ros/groovy/stacks/turtlebot/turtlebot_app_manager/srv_gen/cpp/include"
+  "/opt/ros/groovy/stacks/multimaster_experimental/app_manager/msg_gen/cpp/include"
+  "/opt/ros/groovy/stacks/multimaster_experimental/app_manager/srv_gen/cpp/include"
+  "/opt/ros/groovy/include"
+  "/opt/ros/groovy/include/pcl-1.6"
+  "/opt/ros/groovy/include/opencv"
+  "/usr/include/ni"
+  "/usr/include/eigen3"
+  "/usr/include/vtk-5.8"
+  "/usr/include/qhull"
   "/usr/src/gtest/include"
   "/usr/src/gtest"
   )

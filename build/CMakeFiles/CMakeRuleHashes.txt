@@ -5,7 +5,7 @@ f8052a5628005f70de8545246bd6c051 ../msg_gen/cpp/include/dfDrone/DFDVelocity.h
 09791a1e044f56e6024b981c497229ca ../msg_gen/lisp/DFDVelocity.lisp
 499b2618f13c993c01937108db846f41 ../src/dfDrone/msg/_DFDMessage.py
 63db540bb522feadaf19804951d48657 ../src/dfDrone/msg/_DFDVelocity.py
-c63d44932dfe90382d07cd9005597f2f ../src/dfDrone/msg/__init__.py
+17ec1cc6c8f648f51acc65773294029c ../src/dfDrone/msg/__init__.py
 366681fb8076807dd623f983d4d39fce CMakeFiles/ROSBUILD_genmsg_cpp
 366681fb8076807dd623f983d4d39fce CMakeFiles/ROSBUILD_genmsg_lisp
 366681fb8076807dd623f983d4d39fce CMakeFiles/ROSBUILD_genmsg_py

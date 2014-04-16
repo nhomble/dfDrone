@@ -7,7 +7,6 @@ SET(CMAKE_DEPENDS_LANGUAGES
 SET(CMAKE_MULTIPLE_OUTPUT_PAIRS
   "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/_package.lisp" "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/DFDMessage.lisp"
   "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/_package_DFDMessage.lisp" "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/DFDMessage.lisp"
-  "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/_package_DFDVelocity.lisp" "/home/turtlebot/groovy_workspace/sandbox/dfDrone/msg_gen/lisp/DFDVelocity.lisp"
   )
 
 
