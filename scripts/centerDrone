@@ -38,7 +38,7 @@ g_last_centroid = None
 # in case I do not see the drone
 # I keep track of how many bad "packets"
 g_miss = 0
-MISS_MAX = 10
+MISS_MAX = 30
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
 def main(argv=None):
@@ -80,7 +80,7 @@ def centroidCallback(message):
 		if g_miss > MISS_MAX:
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
-
+			g_miss = 0
 	g_last_time = time.time()
 
 # so given the area of the turtlebot_blob
@@ -104,7 +104,7 @@ def sendRandomWalk(width, height):
 
 	vel.x = random.random() * width
 	vel.y = random.random() * height
-	vel.z = random.randint(0, 20) * 1.0
+	vel.z = random.randint(5, 15) * 1.0
 	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 

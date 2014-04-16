@@ -21,7 +21,10 @@ class DFDVelocity():
 
 	def ros(self):
 		message = Float64MultiArray()
-		message.data = [self.x, self.y, self.z]
+		flag = 0.0
+		if self.isPresent is True:
+			flag = 1.0
+		message.data = [flag, self.x, self.y, self.z]
 		return message
 	
 class DFDMessage():
