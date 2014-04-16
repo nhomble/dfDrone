@@ -66,16 +66,16 @@ def centroidCallback(message):
 	delT = time.time() - g_last_time
 
 	if message.isPresent is True:
-		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
+#		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		g_miss = 0
 
 		newZ = getZPosition(message.area)
 
-		rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ))
+		#rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ) + "X: " + str(message.x))
 		sendVelocityMessage(message, delT, newZ)
 	else:
-		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
-		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
+#		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
+#		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
 		g_miss += 1	
 		if g_miss > MISS_MAX:
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
@@ -88,13 +88,16 @@ def centroidCallback(message):
 # ARDrone by the amount of area I see
 def getZPosition(area):
 	goalArea = 20000.0
-	goalZ = 10.0
-	return goalZ * (goalArea//area)
+	z = (goalArea - area)
+	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
+	return z
 
 # not using all of the variables right now until I figure out what
 # turtlebot follower
 def sendVelocityMessage(DFDMessage, delT, newZ):
-	vel = messageDrone.DFDVelocity(True, DFDMessage.x, DFDMessage.y, newZ, delT)
+	xCenter = DFDMessage.width // 2
+	yCenter = DFDMessage.height // 2
+	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, newZ, delT)
 	g_follower.publish(vel.ros())
 
 # random velocity
@@ -102,10 +105,10 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.random() * width
-	vel.y = random.random() * height
-	vel.z = random.randint(5, 15) * 1.0
-	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
+	vel.x = random.uniform(-1, 1) * width
+	vel.y = random.uniform(-1, 1) * height
+	vel.z = random.randint(-5, 5) * 1.0
+#	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
 if __name__ == "__main__":

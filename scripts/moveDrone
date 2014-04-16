@@ -23,9 +23,9 @@ twist messages
 g_cmd_pub = None
 g_tFollower = None
 
-ZGOAL = 10.0
-ZSCALE = 2.0
-XSCALE = 2.0
+ZGOAL = 5.0
+ZSCALE = 0.5
+XSCALE = 0.1
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
@@ -54,25 +54,13 @@ def moveCallback(velocity):
 	twist.angular.z = -x * XSCALE
 
 	# less drastic movement?
-	if flag == 1.0:
-		twist.linear.x /= 2
-		twist.angular.z /= 2
-	
-	g_cmd_pub.publish(twist)
+	if flag == 0.0:
+		twist.linear.x *= 10
+		twist.angular.z *= 10
 
-def move(vel):
-	twist = Twist()
-	twist.linear.x = 2*vel.delY
-	g_cmd_pub.publish(twist)
-	rospy.loginfo(DEBUG_STRING + "linear movement")
-	rospy.sleep(DELAY)
+	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 
-	twist = Twist()
-	yDist = vel.delY * vel.delay
-	theta = Math.atab(yDist)
-	twist.angular.z = theta * 2 / vel.delay
-	rospy.loginfo(DEBUG_STRING + "angular movement")
-	rospy.sleep(DELAY)
+	g_cmd_pub.publish(twist)
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)

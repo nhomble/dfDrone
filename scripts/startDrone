@@ -55,7 +55,7 @@ def main(argv=None):
 def depthCallback(image):
 	global g_depth
 
-	rospy.loginfo(DEBUG_STRING + "depth callback in startDrone")
+#	 rospy.loginfo(DEBUG_STRING + "depth callback in startDrone")
 	g_depth = image
 #	if global_color is not None and global_depth is not None:
 #		processImage(global_color, global_depth)
@@ -63,7 +63,7 @@ def depthCallback(image):
 def colorCallback(image):
 	global g_color
 
-	rospy.loginfo(DEBUG_STRING + "color callback in startDrone")
+#	rospy.loginfo(DEBUG_STRING + "color callback in startDrone")
 	g_color = image
 
 	if g_color is not None:
@@ -71,7 +71,7 @@ def colorCallback(image):
 
 # upon getting BOTH a new color and depth image call this callback
 def processImage(colorImage, depthImage):
-	rospy.loginfo(DEBUG_STRING + "processing image in startDrone")
+#	rospy.loginfo(DEBUG_STRING + "processing image in startDrone")
 
         b = CvBridge()
         colorFrame = b.imgmsg_to_cv(colorImage, "bgr8")
@@ -84,7 +84,7 @@ def processImage(colorImage, depthImage):
 	
 	# create message - ugly since I do not have my custom message
 	message = g_detector.process(color, depth)	
-	rospy.loginfo(DEBUG_STRING + "message sent")
+#	rospy.loginfo(DEBUG_STRING + "message sent")
 	g_publisher.publish(message.ros())
 
 if __name__ == "__main__":

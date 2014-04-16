@@ -53,7 +53,7 @@ class Detector():
 			isFound, centroid, z = self.hasDrone(img, depth)
 
 		message = messageDrone.DFDMessage(isFound, centroid, z, area, img.width, img.height)
-		print(DEBUG_STRING + " " + str(message.isPresent))
+		#print(DEBUG_STRING + " " + str(message.isPresent))
 		if isFound is True:
 			if self.debug is True:
 				print(DEBUG_STRING + " FOUND")
@@ -95,7 +95,7 @@ class Detector():
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
-			print(DEBUG_STRING + " no blobs to look at")
+			#print(DEBUG_STRING + " no blobs to look at")
 			return False, None, None
 
 		for b in blobs:
@@ -128,16 +128,16 @@ class Detector():
 	# check area - check hue peaks
 	def isValid(self, cropped, centroid):
 		if cropped is None:
-			print(DEBUG_STRING + " nothing in crop")
+			#print(DEBUG_STRING + " nothing in crop")
 			return False
 		# because of the frame of the drone I should see SOME corners
 		flag, corners = getCorners(cropped)
 		if flag is False:
-			print(DEBUG_STRING + " no corners")
+			#print(DEBUG_STRING + " no corners")
 			return False
 
 		if validRGB(cropped.meanColor()):
-			print(DEBUG_STRING + " average color of blob is not valid")
+			#print(DEBUG_STRING + " average color of blob is not valid")
 			return False
 
 		if self.debug is True:
