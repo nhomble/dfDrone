@@ -23,9 +23,9 @@ twist messages
 g_cmd_pub = None
 g_tFollower = None
 
-ZGOAL = 10.0
+ZGOAL = 5.0
 ZSCALE = 2.0
-XSCALE = 2.0
+XSCALE = 7.0
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
