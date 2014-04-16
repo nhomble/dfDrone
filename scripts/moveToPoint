@@ -1,0 +1,42 @@
+#!/usr/bin/env python2
+
+'''
+'''
+
+# python default modules
+import sys
+import time
+
+# ROS specifoc
+import roslib; roslib.load_manifest('dfDrone')
+import rospy
+from sensor_msgs.msg import Image
+from std_msgs.msg import Float64MultiArray
+
+import messageDrone
+
+g_publisher = None
+
+# TimeSequencer is not available for python... dumb
+g_depth = None
+g_color = None
+
+# ROS loop
+def main(argv=None):
+	if argv is None:
+		argv = sys.argv
+
+	rospy.init_node('moveToPoint')
+
+	while True:
+		message = messageDrone.DFDMessage(True, (480, 140), 0, 5000, 640, 280)
+		g_publisher.publish(message.ros())
+		time.sleep(5)
+
+
+if __name__ == "__main__":
+	g_publisher = rospy.Publisher("startDrone", Float64MultiArray)
+	try:
+		sys.exit(main())
+	except rospy.ROSInterruptException:
+		pass

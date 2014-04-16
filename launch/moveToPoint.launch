@@ -1,0 +1,7 @@
+<launch>
+	<include file="$(find turtlebot_follower)/launch/includes/_velocity_smoother.launch"/>
+	<node pkg="dfDrone" name="moveNode" required="true" type="moveDrone" output="screen"></node>
+	<node pkg="dfDrone" name="centerNode" required="true" type="centerDrone" output="screen"></node>
+
+	<node pkg="dfDrone" name="moveToPoint" required="true" type="moveToPoint" output="screen"></node>
+</launch>
