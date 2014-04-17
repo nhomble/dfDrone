@@ -15,6 +15,7 @@ MIN_DISTANCE = 150
 MIN_RGB = 100
 MAX_RGB = 140
 MIN_AREA = 20000
+MAX_AREA = 100000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 DEBUG = False
 
@@ -55,11 +56,10 @@ class Detector():
 		message = messageDrone.DFDMessage(isFound, centroid, z, area, img.width, img.height)
 		#print(DEBUG_STRING + " " + str(message.isPresent))
 		if isFound is True:
-			if self.debug is True:
-				print(DEBUG_STRING + " FOUND")
-				print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
-				print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
-				print(DEBUG_STRING + " Area:" + str(area))
+			print(DEBUG_STRING + " FOUND")
+			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
+			print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
+			print(DEBUG_STRING + " Area:" + str(area))
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, img.width, img.height)
 			
@@ -100,15 +100,16 @@ class Detector():
 
 		for b in blobs:
 			centroid = b.centroid()
+			cropped = cropFromBlob(b, img)
 			area = b.area()
 			if self.blobAlreadySeen(b):
+				if self.debug is True:
+					b.draw()
+					window = img.show()
+					time.sleep(2)
+					window.quit()
 				return True, centroid, area
 			
-			cropped = cropFromBlob(b, img)
-
-			if cropped is None:
-				continue
-
 			# ignore bad blobs
 			if self.isValid(cropped, centroid):
 				# if cropped.area() > MIN_AREA and len(blobs) > 1:
@@ -140,11 +141,15 @@ class Detector():
 			#print(DEBUG_STRING + " average color of blob is not valid")
 			return False
 
+		if cropped.area() > MAX_AREA or cropped.area() < MIN_AREA:
+			return False
+
 		if self.debug is True:
 			for c in corners:
 				c.draw()
-			cropped.show()
+			window = cropped.show()
 			time.sleep(2)
+			window.quit()
 		return True
 
 	def blobAlreadySeen(self, blob):
@@ -165,20 +170,6 @@ def filterImage(img, debug):
 	eroded = gray.erode(10)
 	mult = eroded*2
 	binary = mult.binarize(90)
-	if debug is True:
-		img.show()
-		time.sleep(.5)
-		gray.show()
-		time.sleep(.5)
-		eroded.show()
-		time.sleep(.5)
-
-		mult.show()
-		time.sleep(.5)
-		#div.show()
-		#time.sleep(.5)
-		binary.show()
-		time.sleep(.5)
 	return binary
 
 # just return a cropped image from a blob

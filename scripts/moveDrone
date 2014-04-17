@@ -23,11 +23,11 @@ twist messages
 g_cmd_pub = None
 g_tFollower = None
 
-ZGOAL = 5.0
-ZSCALE = 0.5
-XSCALE = 0.1
+ZGOAL = 20.0
+ZSCALE = 0.001
+XSCALE = 0.001
 
-DEBUG_STRING = "\t\t[MOVE_DRONE] "
+DEBUG_STRING = "\t[MOVE_DRONE] "
 
 # just define a global delay
 DELAY = 1
@@ -38,7 +38,6 @@ def main(argv=None):
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
 	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
-	rospy.spin()
 
 # check whether or we actually have a velocity or I need to 
 # random walk
@@ -53,10 +52,9 @@ def moveCallback(velocity):
 	twist.linear.x = (z - ZGOAL) * ZSCALE
 	twist.angular.z = -x * XSCALE
 
-	# less drastic movement?
-	if flag == 0.0:
-		twist.linear.x *= 10
-		twist.angular.z *= 10
+	if flag == 1.0:
+		twist.linear.x *= 3
+		twist.angular.z *= 20
 
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 

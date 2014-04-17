@@ -61,6 +61,7 @@ def depthCallback(image):
 #		processImage(global_color, global_depth)
 
 def colorCallback(image):
+	rospy.sleep(.5)
 	global g_color
 
 #	rospy.loginfo(DEBUG_STRING + "color callback in startDrone")

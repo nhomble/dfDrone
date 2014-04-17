@@ -38,7 +38,10 @@ g_last_centroid = None
 # in case I do not see the drone
 # I keep track of how many bad "packets"
 g_miss = 0
-MISS_MAX = 30
+# keep track of good "packets"
+g_found = 0
+MISS_MAX = 10
+FOUND_MIN = 3
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
 def main(argv=None):
@@ -49,7 +52,6 @@ def main(argv=None):
 	rospy.loginfo(DEBUG_STRING + "centerDrone has initialized")
 
 	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback)
-	rospy.spin()
 
 def centroidCallback(message):
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
@@ -57,6 +59,7 @@ def centroidCallback(message):
 	global g_last_time
 	global g_last_centroid
 	global g_miss
+	global g_found
 
 	if g_last_time is None or g_last_centroid is None:
 		g_last_centroid = message
@@ -68,14 +71,18 @@ def centroidCallback(message):
 	if message.isPresent is True:
 #		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		g_miss = 0
-
+		g_found += 1
+		rospy.loginfo(DEBUG_STRING + "given x: " + str(message.x))
 		newZ = getZPosition(message.area)
 
-		#rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ) + "X: " + str(message.x))
-		sendVelocityMessage(message, delT, newZ)
+		if g_found > FOUND_MIN:
+			#rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ) + "X: " + str(message.x))
+			sendVelocityMessage(message, delT, newZ)
+			g_found = 0
 	else:
 #		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
 #		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
+		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
@@ -87,9 +94,10 @@ def centroidCallback(message):
 # I am going to guess about how far I am from the 
 # ARDrone by the amount of area I see
 def getZPosition(area):
-	goalArea = 20000.0
+	goalArea = 200000.0
 	z = (goalArea - area)
-	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
+#	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
+	z /= 10000
 	return z
 
 # not using all of the variables right now until I figure out what
@@ -105,9 +113,9 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(-1, 1) * width
-	vel.y = random.uniform(-1, 1) * height
-	vel.z = random.randint(-5, 5) * 1.0
+	vel.x = random.uniform(-3, 3) * width
+	vel.y = random.uniform(-3, 3) * height
+	vel.z = random.randint(-5, 5) * 10.0
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
