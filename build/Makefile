@@ -228,19 +228,6 @@ doxygen/fast:
 .PHONY : doxygen/fast
 
 #=============================================================================
-# Target rules for targets named follower
-
-# Build rule for target.
-follower: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 follower
-.PHONY : follower
-
-# fast build rule for target.
-follower/fast:
-	$(MAKE) -f CMakeFiles/follower.dir/build.make CMakeFiles/follower.dir/build
-.PHONY : follower/fast
-
-#=============================================================================
 # Target rules for targets named rosbuild_clean-test-results
 
 # Build rule for target.
@@ -435,30 +422,6 @@ gtest_main/fast:
 	$(MAKE) -f gtest/CMakeFiles/gtest_main.dir/build.make gtest/CMakeFiles/gtest_main.dir/build
 .PHONY : gtest_main/fast
 
-src/follower.o: src/follower.cpp.o
-.PHONY : src/follower.o
-
-# target to build an object file
-src/follower.cpp.o:
-	$(MAKE) -f CMakeFiles/follower.dir/build.make CMakeFiles/follower.dir/src/follower.cpp.o
-.PHONY : src/follower.cpp.o
-
-src/follower.i: src/follower.cpp.i
-.PHONY : src/follower.i
-
-# target to preprocess a source file
-src/follower.cpp.i:
-	$(MAKE) -f CMakeFiles/follower.dir/build.make CMakeFiles/follower.dir/src/follower.cpp.i
-.PHONY : src/follower.cpp.i
-
-src/follower.s: src/follower.cpp.s
-.PHONY : src/follower.s
-
-# target to generate assembly for a file
-src/follower.cpp.s:
-	$(MAKE) -f CMakeFiles/follower.dir/build.make CMakeFiles/follower.dir/src/follower.cpp.s
-.PHONY : src/follower.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -473,7 +436,6 @@ help:
 	@echo "... clean_test_results"
 	@echo "... doxygen"
 	@echo "... edit_cache"
-	@echo "... follower"
 	@echo "... install"
 	@echo "... install/local"
 	@echo "... install/strip"
@@ -494,9 +456,6 @@ help:
 	@echo "... tests"
 	@echo "... gtest"
 	@echo "... gtest_main"
-	@echo "... src/follower.o"
-	@echo "... src/follower.i"
-	@echo "... src/follower.s"
 .PHONY : help
 
 

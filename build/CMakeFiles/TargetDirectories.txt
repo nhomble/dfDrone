@@ -5,7 +5,6 @@
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/CMakeFiles/ROSBUILD_gensrv_lisp.dir
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/CMakeFiles/clean_test_results.dir
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/CMakeFiles/doxygen.dir
-/home/turtlebot/groovy_workspace/sandbox/dfDrone/build/CMakeFiles/follower.dir
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/gtest/CMakeFiles/gtest.dir
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/gtest/CMakeFiles/gtest_main.dir
 /home/turtlebot/groovy_workspace/sandbox/dfDrone/build/CMakeFiles/rosbuild_clean-test-results.dir
