@@ -17,14 +17,14 @@ MAX_RGB = 140
 MIN_AREA = 20000
 MAX_AREA = 100000
 DEBUG_STRING = "\t[DRONE_DETECT]"
+
+# depracated flag
 DEBUG = False
 
 # called by dfDrone to request information
 class Detector():
-	def __init__(self, debug):
-		self.debug = debug
-		DEBUG = self.debug
-
+	def __init__(self):
+		self.debug = False
 		self.min_blob_size = None
 		self.max_blob_size = None
 	
@@ -60,6 +60,7 @@ class Detector():
 			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
 			print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
 			print(DEBUG_STRING + " Area:" + str(area))
+			img.save(temp=True)
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, img.width, img.height)
 			
@@ -102,7 +103,7 @@ class Detector():
 			centroid = b.centroid()
 			cropped = cropFromBlob(b, img)
 			area = b.area()
-			if self.blobAlreadySeen(b):
+			if self.blobAlreadySeen(b, img):
 				if self.debug is True:
 					b.draw()
 					window = img.show()
@@ -113,7 +114,7 @@ class Detector():
 			# ignore bad blobs
 			if self.isValid(cropped, centroid):
 				# if cropped.area() > MIN_AREA and len(blobs) > 1:
-				self.foundBlobs.append(b)
+				self.foundBlobs.append((b, img))
 				return True, centroid, area
 				# hmm it is suspiciously large
 				# else:	
@@ -152,16 +153,28 @@ class Detector():
 			window.quit()
 		return True
 
-	def blobAlreadySeen(self, blob):
+	def blobAlreadySeen(self, blob, img):
 		counter = 0
-		for b in self.foundBlobs:
-			if b.match(blob) < 10:
+		for tup in self.foundBlobs:
+			if tup[0].match(blob) < 10:
 				# like splay
 				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))
-				return True
+				
+				if percentChange(img, tup[1]) < .1:
+					return True
 			counter += 1
 		return False
 
+	def percentChange(img1, img2):
+		diff = img1 - img2
+		matrix = diff.getNumpy()
+		flat = matrix.flatten()
+		counter = 0
+		for i in flat:
+			if flat[i] == 0:
+				counter += 1
+
+		return float(counter) / float(len(flat))
 
 # try to extract the darker parts of the image
 def filterImage(img, debug):
