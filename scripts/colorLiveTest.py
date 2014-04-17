@@ -12,7 +12,7 @@ def main(argv=None):
 	cam = SimpleCV.Camera()
 	disp = SimpleCV.Display()
 
-	detector = detectDrone.Detector(True)
+	detector = detectDrone.Detector()
 
 	while disp.isNotDone():
 		img = cam.getImage()

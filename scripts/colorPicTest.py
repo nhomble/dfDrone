@@ -17,10 +17,10 @@ def main(argv=None):
 	disp = SimpleCV.Display()
 	img = SimpleCV.Image(str(argv[2]))
 
-	detector = detectDrone.Detector(True)
+	detector = detectDrone.Detector()
 	message = detector.process(img, None)
 	if message.isPresent is isPositive:
-		pass
+		img.show()
 	else:
 		print("should be", isPositive, "but I got", message.isPresent, argv[2])
 
