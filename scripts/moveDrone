@@ -38,6 +38,7 @@ def main(argv=None):
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
 	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
+	rospy.spin()
 
 # check whether or we actually have a velocity or I need to 
 # random walk
@@ -48,13 +49,27 @@ def moveCallback(velocity):
 	z = velocity.data[3]
 	
 	twist = Twist()
-
-	twist.linear.x = (z - ZGOAL) * ZSCALE
-	twist.angular.z = -x * XSCALE
-
+#simpler
+#	if I see it just move forward
+#	if I don't see it just move backward
+#
+#	try to zig zag my way to centering the drone
 	if flag == 1.0:
-		twist.linear.x *= 3
-		twist.angular.z *= 20
+		twist.linear.x = .08
+		if x < 0:
+			twist.angular.z = .2
+		else:
+			twist.angular.z = -.2
+	else:
+		twist.linear.x = -.1
+		twist.angular.z = x
+
+#	twist.linear.x = (z - ZGOAL) * ZSCALE
+#	twist.angular.z = -x * XSCALE
+#
+#	if flag == 1.0:
+#		twist.linear.x *= 3
+#		twist.angular.z *= 20
 
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 

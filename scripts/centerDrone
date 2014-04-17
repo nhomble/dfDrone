@@ -52,6 +52,7 @@ def main(argv=None):
 	rospy.loginfo(DEBUG_STRING + "centerDrone has initialized")
 
 	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback)
+	rospy.spin()
 
 def centroidCallback(message):
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
@@ -78,7 +79,6 @@ def centroidCallback(message):
 		if g_found > FOUND_MIN:
 			#rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ) + "X: " + str(message.x))
 			sendVelocityMessage(message, delT, newZ)
-			g_found = 0
 	else:
 #		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
 #		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
@@ -113,9 +113,9 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(-3, 3) * width
-	vel.y = random.uniform(-3, 3) * height
-	vel.z = random.randint(-5, 5) * 10.0
+	vel.x = random.uniform(-3, 3)
+	vel.y = random.uniform(-3, 3)
+	vel.z = random.randint(-3, 3)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
