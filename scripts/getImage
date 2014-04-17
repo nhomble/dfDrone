@@ -22,7 +22,7 @@ def convert(image):
 	frame = b.imgmsg_to_cv(image, "bgr8")
 	scv = SimpleCV.Image(frame, cv2image=True)
 	scv.show()
-	delay(1000)
+	rospy.sleep(1)
 #	try:
 #		b = CvBridge()
 #		cv_image = b.bridge.imgmsg_to_cv(image.data, "bgr8")	
