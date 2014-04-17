@@ -61,7 +61,6 @@ def depthCallback(image):
 #		processImage(global_color, global_depth)
 
 def colorCallback(image):
-	rospy.sleep(.5)
 	global g_color
 
 #	rospy.loginfo(DEBUG_STRING + "color callback in startDrone")
@@ -69,6 +68,8 @@ def colorCallback(image):
 
 	if g_color is not None:
 		processImage(g_color, g_depth)
+
+	rospy.sleep(.3)
 
 # upon getting BOTH a new color and depth image call this callback
 def processImage(colorImage, depthImage):
@@ -93,7 +94,7 @@ if __name__ == "__main__":
 	g_publisher
 
 	# create detector with no debug option
-	g_detector = detectDrone.Detector(False)
+	g_detector = detectDrone.Detector()
 	g_publisher = rospy.Publisher("startDrone", Float64MultiArray)
 	try:
 		sys.exit(main())
