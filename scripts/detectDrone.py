@@ -11,20 +11,25 @@ import SimpleCV
 import messageDrone
 
 # "ENUMS"
-MIN_DISTANCE = 150
-MIN_RGB = 100
-MAX_RGB = 140
-MIN_AREA = 20000
-MAX_AREA = 100000
+MAX_DISTANCE = 300
+MIN_RGB = 90
+MAX_RGB = 200
+MIN_AREA = 40000
+MAX_AREA = 200000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
+EROSION = 20
+BINARIZE = 90
+MIN_CORNERS = 10
+MAX_CORNERS = 40
+
 # depracated flag
-DEBUG = False
+DEBUG = True
 
 # called by dfDrone to request information
 class Detector():
 	def __init__(self):
-		self.debug = False
+		self.debug = DEBUG
 		self.min_blob_size = None
 		self.max_blob_size = None
 	
@@ -60,7 +65,7 @@ class Detector():
 			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
 			print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
 			print(DEBUG_STRING + " Area:" + str(area))
-			img.save(temp=True)
+			#img.save(temp=True)
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, img.width, img.height)
 			
@@ -104,11 +109,6 @@ class Detector():
 			cropped = cropFromBlob(b, img)
 			area = b.area()
 			if self.blobAlreadySeen(b, img):
-				if self.debug is True:
-					b.draw()
-					window = img.show()
-					time.sleep(2)
-					window.quit()
 				return True, centroid, area
 			
 			# ignore bad blobs
@@ -145,12 +145,6 @@ class Detector():
 		if cropped.area() > MAX_AREA or cropped.area() < MIN_AREA:
 			return False
 
-		if self.debug is True:
-			for c in corners:
-				c.draw()
-			window = cropped.show()
-			time.sleep(2)
-			window.quit()
 		return True
 
 	def blobAlreadySeen(self, blob, img):
@@ -160,12 +154,11 @@ class Detector():
 				# like splay
 				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))
 				
-				if percentChange(img, tup[1]) < .1:
-					return True
+				return True
 			counter += 1
 		return False
 
-	def percentChange(img1, img2):
+	def percentChange(self, img1, img2):
 		diff = img1 - img2
 		matrix = diff.getNumpy()
 		flat = matrix.flatten()
@@ -180,9 +173,9 @@ class Detector():
 def filterImage(img, debug):
 	gray = img.colorDistance(SimpleCV.Color.BLACK).dilate(3)
 	gray = gray/2
-	eroded = gray.erode(10)
+	eroded = gray.erode(EROSION)
 	mult = eroded*2
-	binary = mult.binarize(90)
+	binary = mult.binarize(BINARIZE)
 	return binary
 
 # just return a cropped image from a blob
@@ -243,20 +236,13 @@ def validCorners(corners, img):
 			dist = distanceFromCenter(c, img)
 			# print(dist)
 			# TODO I should not hardcode this value
-			if dist > MIN_DISTANCE:
-				if DEBUG is True:
-					print("" + DEBUG_STRING + " corner is too far from center " + str(dist))
+			if dist > MAX_DISTANCE:
 				continue
 			
 			if validRGB(c.meanColor()):
-				if DEBUG is True:
-					print(DEBUG_STRING + " valid rgb + " + str(c.meanColor()))
 				numValid += 1
-			else:
-				if DEBUG is True:
-					print("" + DEBUG_STRING + " corner is not a valid color " + str(c.meanColor()))
 		# TODO should not hardcode
-		if numValid > 5 and numValid < 20:
+		if numValid > MIN_CORNERS and numValid < MAX_CORNERS:
 			return True, corners
 		return False, None
 		 
