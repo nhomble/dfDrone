@@ -69,7 +69,6 @@ def colorCallback(image):
 	if g_color is not None:
 		processImage(g_color, g_depth)
 
-
 # upon getting BOTH a new color and depth image call this callback
 def processImage(colorImage, depthImage):
 #	rospy.loginfo(DEBUG_STRING + "processing image in startDrone")
