@@ -35,13 +35,11 @@ g_follower = None
 g_move = None
 g_last_time = None
 g_last_centroid = None
-# in case I do not see the drone
-# I keep track of how many bad "packets"
+
 g_miss = 0
-# keep track of good "packets"
 g_found = 0
-MISS_MAX = 10
-FOUND_MIN = 3
+MISS_MAX = 4
+FOUND_MIN = 2
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
 def main(argv=None):
@@ -81,7 +79,7 @@ def centroidCallback(message):
 			sendVelocityMessage(message, delT, newZ)
 	else:
 #		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
-#		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
+		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
 		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
@@ -113,7 +111,7 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(-3, 3)
+	vel.x = random.uniform(3, 4)
 	vel.y = random.uniform(-3, 3)
 	vel.z = random.randint(-3, 3)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
