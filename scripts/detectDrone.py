@@ -12,16 +12,23 @@ import messageDrone
 
 # "ENUMS"
 MAX_DISTANCE = 300
-MIN_RGB = 90
-MAX_RGB = 200
-MIN_AREA = 40000
-MAX_AREA = 200000
+MIN_RGB = 100
+MAX_RGB = 210
+MIN_AREA = 50000
+MAX_AREA = 100000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
-EROSION = 20
+MAX_BLOB_SIZE = .7
+MIN_BLOB_SIZE = .05
+
+EROSION = 10
 BINARIZE = 90
 MIN_CORNERS = 10
-MAX_CORNERS = 40
+MAX_CORNERS = 30
+
+# different constants for inside/outside net
+if False:
+	pass
 
 # depracated flag
 DEBUG = True
@@ -48,8 +55,8 @@ class Detector():
 		self.width = img.width
 		self.height = img.height
 
-		self.min_blob_size = .05 * img.height * img.width
-		self.max_blob_size = .7 * img.height * img.width
+		self.min_blob_size = MIN_BLOB_SIZE * img.height * img.width
+		self.max_blob_size = MAX_BLOB_SIZE * img.height * img.width
 	
 		area = 0.0
 		z = 0.0
@@ -114,7 +121,7 @@ class Detector():
 			# ignore bad blobs
 			if self.isValid(cropped, centroid):
 				# if cropped.area() > MIN_AREA and len(blobs) > 1:
-				self.foundBlobs.append((b, img))
+				self.updateSeen((b, img))
 				return True, centroid, area
 				# hmm it is suspiciously large
 				# else:	
@@ -145,7 +152,17 @@ class Detector():
 		if cropped.area() > MAX_AREA or cropped.area() < MIN_AREA:
 			return False
 
+		if not self.squarish(cropped):
+			return False
 		return True
+
+	def squarish(self, cropped):
+		div = float(cropped.width) / float(cropped.height)
+		print(DEBUG_STRING + " " + str(div))
+		if div < 1:
+			return False
+		else:
+			return True
 
 	def blobAlreadySeen(self, blob, img):
 		counter = 0
@@ -157,6 +174,12 @@ class Detector():
 				return True
 			counter += 1
 		return False
+
+	def updateSeen(self, tup):
+		self.foundBlobs.insert(0, tup)
+		if len(self.foundBlobs) > 10:
+			self.foundBlobs = self.foundBlobs[:5]
+	
 
 	def percentChange(self, img1, img2):
 		diff = img1 - img2
