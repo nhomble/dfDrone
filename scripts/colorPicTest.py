@@ -1,28 +1,33 @@
 #!/usr/bin/env python2
 
+import os
 import sys
 import SimpleCV
+import time
+
 import detectDrone
 import messageDrone
 
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
-	if len(argv) != 3:
-		print(str(argv[0]) + " positive/negative imgPath")
-	isPositive = False;
-	if argv[1] == "positive":
-		isPositive = True;
-
-	disp = SimpleCV.Display()
-	img = SimpleCV.Image(str(argv[2]))
 
 	detector = detectDrone.Detector()
-	message = detector.process(img, None)
-	if message.isPresent is isPositive:
-		img.show()
-	else:
-		print("should be", isPositive, "but I got", message.isPresent, argv[2])
+	if argv[1] == "positive":
+
+		for fn in os.listdir('testing/positive'):
+			img = SimpleCV.Image('testing/positive/' + fn)
+			message = detector.process(img, None)
+			if message.isPresent is False:
+				img.show()
+				time.sleep(2)
+	else:	
+		for fn in os.listdir('testing/negative'):
+			img = SimpleCV.Image('testing/negative/' + fn)
+			message = detector.process(img, None)
+			if message.isPresent is True:
+				img.show()
+				time.sleep(2)
 
 if __name__ == "__main__":
 	sys.exit(main())

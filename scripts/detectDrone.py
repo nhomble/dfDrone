@@ -14,7 +14,7 @@ import messageDrone
 MAX_DISTANCE = 300
 MIN_RGB = 100
 MAX_RGB = 210
-MIN_AREA = 50000
+MIN_AREA = 1000
 MAX_AREA = 100000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
@@ -25,6 +25,8 @@ EROSION = 10
 BINARIZE = 90
 MIN_CORNERS = 10
 MAX_CORNERS = 30
+
+SQUARISH = .6
 
 # different constants for inside/outside net
 if False:
@@ -137,29 +139,31 @@ class Detector():
 	# check area - check hue peaks
 	def isValid(self, cropped, centroid):
 		if cropped is None:
-			#print(DEBUG_STRING + " nothing in crop")
+			print(DEBUG_STRING + " nothing in crop")
 			return False
 		# because of the frame of the drone I should see SOME corners
 		flag, corners = getCorners(cropped)
 		if flag is False:
-			#print(DEBUG_STRING + " no corners")
+			print(DEBUG_STRING + " no corners")
 			return False
 
 		if validRGB(cropped.meanColor()):
-			#print(DEBUG_STRING + " average color of blob is not valid")
+			print(DEBUG_STRING + " average color of blob is not valid")
 			return False
 
 		if cropped.area() > MAX_AREA or cropped.area() < MIN_AREA:
+			print(DEBUG_STRING + " bad area " + str(cropped.area()))
 			return False
 
 		if not self.squarish(cropped):
+			print(DEBUG_STRING + " not squarish")
 			return False
 		return True
 
 	def squarish(self, cropped):
 		div = float(cropped.width) / float(cropped.height)
 		print(DEBUG_STRING + " " + str(div))
-		if div < 1:
+		if div < SQUARISH:
 			return False
 		else:
 			return True
