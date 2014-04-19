@@ -1,0 +1,24 @@
+#!/usr/bin/env python2
+
+import sys
+
+import roslib; roslib.load_manifest('dfDrone')
+import rospy
+from std_msgs.msg import Float64MultiArray
+
+import messageDrone
+
+def main(argv=None):
+	if argv is None:
+		argv = sys.argv
+
+	rospy.init_node('calibrateTwist')
+	p = rospy.Publisher('centerDrone', Float64MultiArray)
+
+	message = messageDrone.DFDVelocity(True, 10, 10, 5, 10)
+	p.publish(message.ros())
+	
+	rospy.spin()
+
+if __name__ == "__main__":
+	sys.exit(main())

@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="dfDrone" name="moveForwardDrone" required="true" type="moveForward" output="screen">
+	</node>
+	<node pkg="dfDrone" name="calibrateTwist" required="true" type="calibrateTwist" output="screen"></node>
+</launch>
