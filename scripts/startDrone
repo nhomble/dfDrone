@@ -31,6 +31,8 @@ g_publisher = None
 g_depth = None
 g_color = None
 
+THROTTLE = .1
+
 DEBUG_STRING = "[START_DRONE] "
 
 # ROS loop
@@ -86,6 +88,7 @@ def processImage(colorImage, depthImage):
 	message = g_detector.process(color, depth)	
 #	rospy.loginfo(DEBUG_STRING + "message sent")
 	g_publisher.publish(message.ros())
+	rospy.sleep(THROTTLE)
 
 if __name__ == "__main__":
 	g_detector

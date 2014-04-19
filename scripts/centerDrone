@@ -38,7 +38,7 @@ g_last_centroid = None
 
 g_miss = 0
 g_found = 0
-MISS_MAX = 4
+MISS_MAX = 10
 FOUND_MIN = 2
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
@@ -83,9 +83,9 @@ def centroidCallback(message):
 		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
+			g_miss = MISS_MAX/2
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
-			g_miss = 0
 	g_last_time = time.time()
 
 # so given the area of the turtlebot_blob
@@ -111,9 +111,9 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(3, 4)
+	vel.x = random.uniform(0, 2)
 	vel.y = random.uniform(-3, 3)
-	vel.z = random.randint(-3, 3)
+	vel.z = random.randint(-2, 0)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
