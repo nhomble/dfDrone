@@ -61,7 +61,7 @@ def moveCallback(velocity):
 		else:
 			twist.angular.z = -.2
 	else:
-		twist.linear.x = z
+		twist.linear.x = z/2
 		twist.angular.z = x
 
 #	twist.linear.x = (z - ZGOAL) * ZSCALE
