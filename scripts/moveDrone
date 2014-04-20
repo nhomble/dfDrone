@@ -23,7 +23,7 @@ twist messages
 g_cmd_pub = None
 g_tFollower = None
 
-DEBUG_STRING = "\t[MOVE_DRONE] "
+DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
 # just define a global delay
 DELAY = 1
@@ -79,14 +79,14 @@ def scaleLinear(x):
 	limit = 100
 	if x < 0:
 		if x < -limit:
-			return -.2
+			return -.3
 		else:
-			return -.1
+			return -.2
 	elif x > 0:
 		if x > limit:
-			return .2
+			return .3
 		else:
-			return .1
+			return .2
 	else:
 		return 0
 

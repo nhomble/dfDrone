@@ -35,7 +35,7 @@ g_last_centroid = None
 
 g_miss = 0
 g_found = 0
-MISS_MAX = 10
+MISS_MAX = 5
 FOUND_MIN = 2
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
