@@ -8,26 +8,37 @@ import time
 import detectDrone
 import messageDrone
 
+TIME = 1
+
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 
 	detector = detectDrone.Detector()
-	if argv[1] == "positive":
 
+	total = 0
+	count = 0
+	if argv[1] == "positive":
 		for fn in os.listdir('testing/positive'):
+			total += 1
 			img = SimpleCV.Image('testing/positive/' + fn)
 			message = detector.process(img, None)
 			if message.isPresent is False:
+				count += 1
 				img.show()
-				time.sleep(2)
+				time.sleep(TIME)
 	else:	
 		for fn in os.listdir('testing/negative'):
+			total += 1
 			img = SimpleCV.Image('testing/negative/' + fn)
 			message = detector.process(img, None)
 			if message.isPresent is True:
+				count += 1
 				img.show()
-				time.sleep(2)
+				time.sleep(TIME)
+
+	percent = float(count) / float(total)
+	print("percent bad " + str(percent))
 
 if __name__ == "__main__":
 	sys.exit(main())
