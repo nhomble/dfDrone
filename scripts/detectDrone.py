@@ -12,23 +12,26 @@ import messageDrone
 
 # "ENUMS"
 MAX_DISTANCE = 200
-MIN_RGB = 100
+MIN_RGB = 160
 MAX_RGB = 210
-MIN_AREA = 50000
+MIN_AREA = 5000
 MAX_AREA = 300000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
-MAX_BLOB_SIZE = .9
+MAX_BLOB_SIZE = .7
 MIN_BLOB_SIZE = .1
 
 EROSION = 20
 BINARIZE = 90
 MIN_CORNERS = 5
 MAX_CORNERS = 41
-MAX_LINES = 8
-MIN_HOLES = 2
+MAX_LINES = 2
+MIN_HOLES = 10
 
 SQUARISH = .9
+
+MAX_SPLAY = 10
+SPLAY_COUNT = 0
 
 # make sure this is even
 SPLAY_LENGTH = 4
@@ -111,10 +114,15 @@ class Detector():
 
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img):
+		global SPLAY_COUNT
+
+		if SPLAY_COUNT > MAX_SPLAY:
+			self.foundBlobs = []
+			SPLAY_COUNT = 0
+
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
-			self.foundBlobs = []
 #			print(DEBUG_STRING + " no blobs to look at")
 			return False, None, None, None, None, None
 
@@ -127,6 +135,7 @@ class Detector():
 				break
 
 			if self.blobAlreadySeen(b, img):
+				SPLAY_COUNT += 1
 				return True, centroid, area, -1, -1, -1
 
 			cropped = cropFromBlob(b, img)
@@ -143,6 +152,7 @@ class Detector():
 	def isValid(self, cropped):
 		holes = []
 		fails = 0
+
 		retLines = 0
 		retCorners = 0
 		retHoles = 0
@@ -155,8 +165,8 @@ class Detector():
 #		I should not see that many, trying to avoid black squares/walls
 		flag, lines = getLines(cropped)
 		if flag is False:
-			fails += 1
-#			print(DEBUG_STRING + " bad lines")
+			fails += 3
+			print(DEBUG_STRING + " bad lines")
 #			return False, None, None, None
 		else:
 			retLines = len(lines)
@@ -164,8 +174,8 @@ class Detector():
 #		should see quite a few of these because of all the edges
 		flag, corners = getCorners(cropped)
 		if flag is False:
-			fails += 5
-#			print(DEBUG_STRING + " no corners")
+			fails += 3
+			print(DEBUG_STRING + " no corners")
 #			return False, None, None, None
 		else:
 			retCorners = len(corners)
@@ -174,27 +184,28 @@ class Detector():
 #		as opposed to a TV
 		flag, holes = getHoles(cropped)
 		if flag is False:
-			fails += 3
-#			print(DEBUG_STRING + " no holes")
+			fails += 4
+			print(DEBUG_STRING + " no holes")
 #			return False, None, None, None
 		else:
 			retHoles = len(holes)
 
 #		gotta be black
 		if validRGB(cropped.meanColor()):
-			fails += 4
-#			print(DEBUG_STRING + " average color of blob is not valid")
+			fails += 5
+			print(DEBUG_STRING + " average color of blob is not valid")
 #			return False, None, None, None
 
 #		try to avoid tall people
 		if not self.squarish(cropped):
-			fails += 2
-#			print(DEBUG_STRING + " not squarish")
+			fails += 4
+			print(DEBUG_STRING + " not squarish")
 #			return False, None, None, None
 
-		if fails > 9:
+		if fails > 6:
 			print(DEBUG_STRING + " fails: " + str(fails))
 			return False, None, None, None
+
 		return True, retLines, retCorners, retHoles
 
 	def squarish(self, cropped):
