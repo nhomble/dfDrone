@@ -14,7 +14,7 @@ import messageDrone
 MAX_DISTANCE = 200
 MIN_RGB = 100
 MAX_RGB = 210
-MIN_AREA = 10000
+MIN_AREA = 50000
 MAX_AREA = 300000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
@@ -26,7 +26,7 @@ BINARIZE = 90
 MIN_CORNERS = 5
 MAX_CORNERS = 41
 MAX_LINES = 8
-MIN_HOLES = 1
+MIN_HOLES = 2
 
 SQUARISH = .9
 
@@ -115,7 +115,7 @@ class Detector():
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
 			self.foundBlobs = []
-			print(DEBUG_STRING + " no blobs to look at")
+#			print(DEBUG_STRING + " no blobs to look at")
 			return False, None, None, None, None, None
 
 		for b in blobs:
@@ -149,14 +149,14 @@ class Detector():
 
 #		null check
 		if cropped is None:
-			print(DEBUG_STRING + " nothing in crop")
+#			print(DEBUG_STRING + " nothing in crop")
 			return False, None, None, None
 
 #		I should not see that many, trying to avoid black squares/walls
 		flag, lines = getLines(cropped)
 		if flag is False:
 			fails += 1
-			print(DEBUG_STRING + " bad lines")
+#			print(DEBUG_STRING + " bad lines")
 #			return False, None, None, None
 		else:
 			retLines = len(lines)
@@ -165,7 +165,7 @@ class Detector():
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			fails += 5
-			print(DEBUG_STRING + " no corners")
+#			print(DEBUG_STRING + " no corners")
 #			return False, None, None, None
 		else:
 			retCorners = len(corners)
@@ -175,7 +175,7 @@ class Detector():
 		flag, holes = getHoles(cropped)
 		if flag is False:
 			fails += 3
-			print(DEBUG_STRING + " no holes")
+#			print(DEBUG_STRING + " no holes")
 #			return False, None, None, None
 		else:
 			retHoles = len(holes)
@@ -183,16 +183,17 @@ class Detector():
 #		gotta be black
 		if validRGB(cropped.meanColor()):
 			fails += 4
-			print(DEBUG_STRING + " average color of blob is not valid")
+#			print(DEBUG_STRING + " average color of blob is not valid")
 #			return False, None, None, None
 
 #		try to avoid tall people
 		if not self.squarish(cropped):
 			fails += 2
-			print(DEBUG_STRING + " not squarish")
+#			print(DEBUG_STRING + " not squarish")
 #			return False, None, None, None
 
 		if fails > 9:
+			print(DEBUG_STRING + " fails: " + str(fails))
 			return False, None, None, None
 		return True, retLines, retCorners, retHoles
 
@@ -204,6 +205,7 @@ class Detector():
 		else:
 			return True
 
+#	WAY TO SLOW!
 	def percentChange(self, img1, img2):
 		diff = img1 - img2
 		matrix = diff.getNumpy()
@@ -226,14 +228,12 @@ class Detector():
 				return True
 			counter += 1
 		self.foundBlobs = []
-		print(DEBUG_STRING + " clear foundBlobs")
 		return False
 
 	def updateSeen(self, tup):
 		self.foundBlobs.insert(0, tup)
 		if len(self.foundBlobs) > SPLAY_LENGTH:
 			self.foundBlobs = self.foundBlobs[:SPLAY_LENGTH/2]
-			print(DEBUG_STRING + " foundBlobs halved")
 	
 # try to extract the darker parts of the image
 def filterImage(img, debug):
