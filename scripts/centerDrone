@@ -35,7 +35,7 @@ g_last_centroid = None
 
 g_miss = 0
 g_found = 0
-MISS_MAX = 5
+MISS_MAX = 10
 FOUND_MIN = 2
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
@@ -89,8 +89,8 @@ def centroidCallback(message):
 
 # I will scale the linear motion in moveDrone
 def getZPosition(area):
-	goalArea = 90000.0
-	z = (goalArea - area)
+	goalArea = 25000.0
+	z = area/goalArea
 #	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
 	return z
 
