@@ -51,7 +51,7 @@ def main(argv=None):
 #	else:
 #		getColor = False
 #		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
-	color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+	color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback, queue_size=1)
 	rospy.spin()
 
 def depthCallback(image):
