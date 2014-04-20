@@ -11,11 +11,11 @@ import SimpleCV
 import messageDrone
 
 # "ENUMS"
-MAX_DISTANCE = 300
+MAX_DISTANCE = 200
 MIN_RGB = 100
 MAX_RGB = 210
 MIN_AREA = 1000
-MAX_AREA = 100000
+MAX_AREA = 75000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
 MAX_BLOB_SIZE = .7
@@ -24,9 +24,9 @@ MIN_BLOB_SIZE = .05
 EROSION = 10
 BINARIZE = 90
 MIN_CORNERS = 10
-MAX_CORNERS = 30
+MAX_CORNERS = 20
 
-SQUARISH = .6
+SQUARISH = .7
 
 # different constants for inside/outside net
 if False:
@@ -141,7 +141,6 @@ class Detector():
 		if cropped is None:
 			print(DEBUG_STRING + " nothing in crop")
 			return False
-		# because of the frame of the drone I should see SOME corners
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			print(DEBUG_STRING + " no corners")
