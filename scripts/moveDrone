@@ -49,13 +49,13 @@ def moveCallback(velocity):
 #
 #	try to zig zag my way to centering the drone
 	if flag == 1.0:
-		twist.linear.x = x
+		twist.linear.x = z
 		if x < 0:
-			twist.angular.z = .2
+			twist.angular.z = 1
 		elif x == 0:
 			twist.angular.z = 0
 		else:
-			twist.angular.z = -.2
+			twist.angular.z = -1
 	else:
 		twist.linear.x = z/2
 		twist.angular.z = x
