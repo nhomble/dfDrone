@@ -35,7 +35,7 @@ g_last_centroid = None
 
 g_miss = 0
 g_found = 0
-MISS_MAX = 15
+MISS_MAX = 20
 FOUND_MIN = 3
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
@@ -89,7 +89,7 @@ def centroidCallback(message):
 
 # I will scale the linear motion in moveDrone
 def getZPosition(area):
-	goalArea = 125000
+	goalArea = 50000
 	z = area/goalArea
 #	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
 	return z
@@ -100,11 +100,11 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 	xCenter = DFDMessage.width // 2
 	yCenter = DFDMessage.height // 2
 
-	z = 0
-	if newZ > 1:
-		z = .1
-	else:
-		z = -.05
+	z = .1
+#	if newZ > 1:
+#		z = .1
+#	else:
+#		z = -.05
 	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, z, delT)
 	g_follower.publish(vel.ros())
 
@@ -113,7 +113,7 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(0, 2)
+	vel.x = random.uniform(0, 3)
 	vel.y = random.uniform(-3, 3)
 	vel.z = random.randint(-1, 0)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
