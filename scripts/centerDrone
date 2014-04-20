@@ -11,9 +11,6 @@ is the fact that I may get a number of false-negatives inbetween
 some number of images. This node will require consecutive detections
 to be false until randomWalk is initiated.
 
-UPDATE:
-So I should use the turtlebot follower to actually follow the drone. So
-this node will publish to
 '''
 
 # python built-ins
@@ -68,17 +65,15 @@ def centroidCallback(message):
 	delT = time.time() - g_last_time
 
 	if message.isPresent is True:
-#		rospy.loginfo(DEBUG_STRING + "positive callback in centerDrone")
 		g_miss = 0
 		g_found += 1
-		rospy.loginfo(DEBUG_STRING + "given x: " + str(message.x))
 		newZ = getZPosition(message.area)
 
 		if g_found > FOUND_MIN:
-			#rospy.loginfo(DEBUG_STRING + "Z: " + str(newZ) + "X: " + str(message.x))
 			sendVelocityMessage(message, delT, newZ)
+		else:
+			sendStopMessage()
 	else:
-#		rospy.loginfo(DEBUG_STRING + "negative callback in centerDrone")
 		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
 		g_found = 0
 		g_miss += 1	
@@ -91,11 +86,12 @@ def centroidCallback(message):
 # so given the area of the turtlebot_blob
 # I am going to guess about how far I am from the 
 # ARDrone by the amount of area I see
+
+# I will scale the linear motion in moveDrone
 def getZPosition(area):
-	goalArea = 200000.0
+	goalArea = 90000.0
 	z = (goalArea - area)
 #	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
-	z /= 10000
 	return z
 
 # not using all of the variables right now until I figure out what
@@ -115,6 +111,12 @@ def sendRandomWalk(width, height):
 	vel.y = random.uniform(-3, 3)
 	vel.z = random.randint(-1, 0)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
+	g_follower.publish(vel.ros())
+
+# when I see anything that might look like the drone I want to STOP
+# and look at it rather than complete my random movement
+def sendStopMessage():
+	vel = messageDrone.DFDVelocity(True, 0, 0, 0, 0)
 	g_follower.publish(vel.ros())
 
 if __name__ == "__main__":
