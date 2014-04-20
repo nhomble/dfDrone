@@ -14,16 +14,16 @@ import messageDrone
 MAX_DISTANCE = 200
 MIN_RGB = 100
 MAX_RGB = 210
-MIN_AREA = 2000
-MAX_AREA = 75000
+MIN_AREA = 10000
+MAX_AREA = 300000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
-MAX_BLOB_SIZE = .7
-MIN_BLOB_SIZE = .05
+MAX_BLOB_SIZE = .9
+MIN_BLOB_SIZE = .1
 
-EROSION = 10
+EROSION = 20
 BINARIZE = 90
-MIN_CORNERS = 15
+MIN_CORNERS = 5
 MAX_CORNERS = 41
 MAX_LINES = 8
 MIN_HOLES = 1
@@ -123,6 +123,7 @@ class Detector():
 			area = b.area()
 
 			if area < MIN_AREA or area > MAX_AREA:
+				print(DEBUG_STRING + " bad area " + str(area))
 				break
 
 			if self.blobAlreadySeen(b, img):
@@ -141,6 +142,11 @@ class Detector():
 	# ok now I have a black blob, let's be clever
 	def isValid(self, cropped):
 		holes = []
+		fails = 0
+		retLines = 0
+		retCorners = 0
+		retHoles = 0
+
 #		null check
 		if cropped is None:
 			print(DEBUG_STRING + " nothing in crop")
@@ -149,32 +155,46 @@ class Detector():
 #		I should not see that many, trying to avoid black squares/walls
 		flag, lines = getLines(cropped)
 		if flag is False:
+			fails += 1
 			print(DEBUG_STRING + " bad lines")
-			return False, None, None, None
+#			return False, None, None, None
+		else:
+			retLines = len(lines)
 
 #		should see quite a few of these because of all the edges
 		flag, corners = getCorners(cropped)
 		if flag is False:
+			fails += 5
 			print(DEBUG_STRING + " no corners")
-			return False, None, None, None
+#			return False, None, None, None
+		else:
+			retCorners = len(corners)
 
 #		big distinguishing factor, there are holes for the rotors
 #		as opposed to a TV
 		flag, holes = getHoles(cropped)
 		if flag is False:
+			fails += 3
 			print(DEBUG_STRING + " no holes")
-			return False, None, None, None
+#			return False, None, None, None
+		else:
+			retHoles = len(holes)
 
 #		gotta be black
 		if validRGB(cropped.meanColor()):
+			fails += 4
 			print(DEBUG_STRING + " average color of blob is not valid")
-			return False, None, None, None
+#			return False, None, None, None
 
 #		try to avoid tall people
 		if not self.squarish(cropped):
+			fails += 2
 			print(DEBUG_STRING + " not squarish")
+#			return False, None, None, None
+
+		if fails > 9:
 			return False, None, None, None
-		return True, len(lines), len(corners), len(holes)
+		return True, retLines, retCorners, retHoles
 
 	def squarish(self, cropped):
 		div = float(cropped.width) / float(cropped.height)
@@ -217,14 +237,20 @@ class Detector():
 	
 # try to extract the darker parts of the image
 def filterImage(img, debug):
-	gray = img.colorDistance(SimpleCV.Color.BLACK).dilate(3)
-	gray = gray/2
-	eroded = gray.erode(EROSION)
+	#img.show()
+	#time.sleep(1)
+	#gray = img.colorDistance(SimpleCV.Color.BLACK).dilate(3)
+	#gray = gray/2
+	#gray.show()
+	#time.sleep(1)
+	eroded = img.erode(EROSION)
+	#eroded.show()
+	#time.sleep(1)
 	mult = eroded*2
+	#mult.show()
+	#time.sleep(1)
 	binary = mult.binarize(BINARIZE)
-	morph = binary.morphClose()
-	time.sleep(1)
-	return morph
+	return binary
 
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
