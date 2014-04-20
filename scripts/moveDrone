@@ -25,8 +25,6 @@ g_tFollower = None
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
-# just define a global delay
-DELAY = 1
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
@@ -51,7 +49,7 @@ def moveCallback(velocity):
 #
 #	try to zig zag my way to centering the drone
 	if flag == 1.0:
-		twist.linear.x = scaleLinear(x)
+		twist.linear.x = x
 		if x < 0:
 			twist.angular.z = .2
 		elif x == 0:
@@ -72,23 +70,6 @@ def moveCallback(velocity):
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 
 	g_cmd_pub.publish(twist)
-
-# just hardcoding linear movement
-# based off a roungh calculation of z distance
-def scaleLinear(x):
-	limit = 100
-	if x < 0:
-		if x < -limit:
-			return -.3
-		else:
-			return -.2
-	elif x > 0:
-		if x > limit:
-			return .3
-		else:
-			return .2
-	else:
-		return 0
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)
