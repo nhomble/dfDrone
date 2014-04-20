@@ -23,10 +23,6 @@ twist messages
 g_cmd_pub = None
 g_tFollower = None
 
-ZGOAL = 20.0
-ZSCALE = 0.001
-XSCALE = 0.001
-
 DEBUG_STRING = "\t[MOVE_DRONE] "
 
 # just define a global delay
@@ -55,9 +51,11 @@ def moveCallback(velocity):
 #
 #	try to zig zag my way to centering the drone
 	if flag == 1.0:
-		twist.linear.x = .08
+		twist.linear.x = scaleLinear(x)
 		if x < 0:
 			twist.angular.z = .2
+		elif x == 0:
+			twist.angular.z = 0
 		else:
 			twist.angular.z = -.2
 	else:
@@ -74,6 +72,23 @@ def moveCallback(velocity):
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 
 	g_cmd_pub.publish(twist)
+
+# just hardcoding linear movement
+# based off a roungh calculation of z distance
+def scaleLinear(x):
+	limit = 100
+	if x < 0:
+		if x < -limit:
+			return -.2
+		else:
+			return -.1
+	elif x > 0:
+		if x > limit:
+			return .2
+		else:
+			return .1
+	else:
+		return 0
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)
