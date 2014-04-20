@@ -18,6 +18,10 @@ def main(argv=None):
 
 	total = 0
 	count = 0
+	verbose = False
+	if len(argv) > 2 and argv[2] == "verbose":
+		verbose = True
+
 	if argv[1] == "positive":
 		for fn in os.listdir('testing/positive'):
 			total += 1
@@ -25,8 +29,9 @@ def main(argv=None):
 			message = detector.process(img, None)
 			if message.isPresent is False:
 				count += 1
-				img.show()
-				time.sleep(TIME)
+				if verbose:
+					img.show()
+					time.sleep(TIME)
 	else:	
 		for fn in os.listdir('testing/negative'):
 			total += 1
@@ -34,8 +39,9 @@ def main(argv=None):
 			message = detector.process(img, None)
 			if message.isPresent is True:
 				count += 1
-				img.show()
-				time.sleep(TIME)
+				if verbose:
+					img.show()
+					time.sleep(TIME)
 
 	percent = float(count) / float(total)
 	print("percent bad " + str(percent))
