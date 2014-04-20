@@ -14,7 +14,7 @@ import messageDrone
 MAX_DISTANCE = 200
 MIN_RGB = 100
 MAX_RGB = 210
-MIN_AREA = 1000
+MIN_AREA = 2000
 MAX_AREA = 75000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
@@ -23,14 +23,15 @@ MIN_BLOB_SIZE = .05
 
 EROSION = 10
 BINARIZE = 90
-MIN_CORNERS = 10
-MAX_CORNERS = 20
+MIN_CORNERS = 15
+MAX_CORNERS = 41
+MAX_LINES = 8
+MIN_HOLES = 1
 
-SQUARISH = .7
+SQUARISH = .9
 
-# different constants for inside/outside net
-if False:
-	pass
+# make sure this is even
+SPLAY_LENGTH = 4
 
 # depracated flag
 DEBUG = True
@@ -63,9 +64,9 @@ class Detector():
 		area = 0.0
 		z = 0.0
 		if depth is None:
-			isFound, centroid, area = self.hasDroneAux(img)
+			isFound, centroid, area, lines, corners, holes = self.hasDroneAux(img)
 		else:	
-			isFound, centroid, z = self.hasDrone(img, depth)
+			isFound, centroid, z, lines, corners, holes = self.hasDrone(img, depth)
 
 		message = messageDrone.DFDMessage(isFound, centroid, z, area, img.width, img.height)
 		#print(DEBUG_STRING + " " + str(message.isPresent))
@@ -74,6 +75,9 @@ class Detector():
 			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
 			print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
 			print(DEBUG_STRING + " Area:" + str(area))
+			print(DEBUG_STRING + " Lines: " + str(lines))
+			print(DEBUG_STRING + " Corners: " + str(corners))
+			print(DEBUG_STRING + " Holes: " + str(holes))
 			#img.save(temp=True)
 			return message
 		return messageDrone.DFDMessage(False, None, None, None, img.width, img.height)
@@ -89,7 +93,7 @@ class Detector():
 		if depth is not None:
 			objects = getBlobs(depth, self.min_blob_size, self.max_blob_size)
 			if objects is None:
-				return False, None, None
+				return False, None, None, None, None, None
 			
 			for obj in objects:
 				cropped = cropFromBlobs(obj, img)
@@ -100,64 +104,77 @@ class Detector():
 					dep = depth.getPixel(tCentroid[0], tCentroid[1])
 					# calibrate dep TODO
 					return tValid, tCentroid, dep
-			return False, None, None
+			return False, None, None, None, None, None
 		else:
-			v, c, area = self.hasDroneAux(img, 0)
-			return v, c, area
+			v, c, area, lines, corners, holes = self.hasDroneAux(img, 0)
+			return v, c, area, lines, corners, holes
 
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img):
 		filtered = filterImage(img, self.debug)
 		blobs = getBlobs(filtered, self.min_blob_size, self.max_blob_size)
 		if blobs is None:
-			#print(DEBUG_STRING + " no blobs to look at")
-			return False, None, None
+			self.foundBlobs = []
+			print(DEBUG_STRING + " no blobs to look at")
+			return False, None, None, None, None, None
 
 		for b in blobs:
 			centroid = b.centroid()
-			cropped = cropFromBlob(b, img)
 			area = b.area()
+
+			if area < MIN_AREA or area > MAX_AREA:
+				break
+
 			if self.blobAlreadySeen(b, img):
-				return True, centroid, area
+				return True, centroid, area, -1, -1, -1
+
+			cropped = cropFromBlob(b, img)
 			
 			# ignore bad blobs
-			if self.isValid(cropped, centroid):
-				# if cropped.area() > MIN_AREA and len(blobs) > 1:
+			valid, lines, corners, holes = self.isValid(cropped)
+			if valid is True:
 				self.updateSeen((b, img))
-				return True, centroid, area
-				# hmm it is suspiciously large
-				# else:	
-				#	if iterations < 3:
-				#		if self.debug is True:
-				#			print(DEBUG_STRING + " recurse detection")
-				#		tFlag, tCent = self.hasDroneAux(cropped, iterations + 1)
-				#		if tFlag is False:
-				#			return True, centroid
-		return False, None, None
+				return True, centroid, area, lines, corners, holes
+		self.foundBlobs = []
+		return False, None, None, None, None, None
 
 	# ok now I have a black blob, let's be clever
-	# check area - check hue peaks
-	def isValid(self, cropped, centroid):
+	def isValid(self, cropped):
+		holes = []
+#		null check
 		if cropped is None:
 			print(DEBUG_STRING + " nothing in crop")
-			return False
+			return False, None, None, None
+
+#		I should not see that many, trying to avoid black squares/walls
+		flag, lines = getLines(cropped)
+		if flag is False:
+			print(DEBUG_STRING + " bad lines")
+			return False, None, None, None
+
+#		should see quite a few of these because of all the edges
 		flag, corners = getCorners(cropped)
 		if flag is False:
 			print(DEBUG_STRING + " no corners")
-			return False
+			return False, None, None, None
 
+#		big distinguishing factor, there are holes for the rotors
+#		as opposed to a TV
+		flag, holes = getHoles(cropped)
+		if flag is False:
+			print(DEBUG_STRING + " no holes")
+			return False, None, None, None
+
+#		gotta be black
 		if validRGB(cropped.meanColor()):
 			print(DEBUG_STRING + " average color of blob is not valid")
-			return False
+			return False, None, None, None
 
-		if cropped.area() > MAX_AREA or cropped.area() < MIN_AREA:
-			print(DEBUG_STRING + " bad area " + str(cropped.area()))
-			return False
-
+#		try to avoid tall people
 		if not self.squarish(cropped):
 			print(DEBUG_STRING + " not squarish")
-			return False
-		return True
+			return False, None, None, None
+		return True, len(lines), len(corners), len(holes)
 
 	def squarish(self, cropped):
 		div = float(cropped.width) / float(cropped.height)
@@ -166,23 +183,6 @@ class Detector():
 			return False
 		else:
 			return True
-
-	def blobAlreadySeen(self, blob, img):
-		counter = 0
-		for tup in self.foundBlobs:
-			if tup[0].match(blob) < 10:
-				# like splay
-				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))
-				
-				return True
-			counter += 1
-		return False
-
-	def updateSeen(self, tup):
-		self.foundBlobs.insert(0, tup)
-		if len(self.foundBlobs) > 10:
-			self.foundBlobs = self.foundBlobs[:5]
-	
 
 	def percentChange(self, img1, img2):
 		diff = img1 - img2
@@ -195,6 +195,26 @@ class Detector():
 
 		return float(counter) / float(len(flat))
 
+
+	def blobAlreadySeen(self, blob, img):
+		counter = 0
+		for tup in self.foundBlobs:
+			if tup[0].match(blob) < 10:
+			#if self.percentChange(tup[1], img) < .10:
+				# like splay
+				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))
+				return True
+			counter += 1
+		self.foundBlobs = []
+		print(DEBUG_STRING + " clear foundBlobs")
+		return False
+
+	def updateSeen(self, tup):
+		self.foundBlobs.insert(0, tup)
+		if len(self.foundBlobs) > SPLAY_LENGTH:
+			self.foundBlobs = self.foundBlobs[:SPLAY_LENGTH/2]
+			print(DEBUG_STRING + " foundBlobs halved")
+	
 # try to extract the darker parts of the image
 def filterImage(img, debug):
 	gray = img.colorDistance(SimpleCV.Color.BLACK).dilate(3)
@@ -202,7 +222,9 @@ def filterImage(img, debug):
 	eroded = gray.erode(EROSION)
 	mult = eroded*2
 	binary = mult.binarize(BINARIZE)
-	return binary
+	morph = binary.morphClose()
+	time.sleep(1)
+	return morph
 
 # just return a cropped image from a blob
 def cropFromBlob(blob, image):
@@ -243,10 +265,15 @@ def validLines(lines):
 	if lines is None:
 		return False, None
 	for l in lines:
-		mean = l.meanColor()
+#		had unknown errors previously
+#		simplecv bug?
+		try:
+			mean = l.meanColor()
+		except:
+			continue
 		if validRGB(mean):
 			ret.append(l)	
-	if len(ret) > 0:
+	if len(ret) < MAX_LINES:
 		return True, ret
 	return False, None
 
@@ -293,6 +320,15 @@ the following are wrappers of simplecv feature detection functions
 here I wanted to draw the features when found for debugging purposes
 and cool visuals
 '''
+
+# not finished
+def getHoles(img):
+	holes = img.findBlobs()
+	if len(holes) > MIN_HOLES:
+		return True, holes
+	else:
+		return False, None
+
 def getLines(img):
 	lines = img.findLines()
 	if(lines is not None):
