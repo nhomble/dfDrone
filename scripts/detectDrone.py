@@ -30,9 +30,9 @@ MIN_HOLES = 10
 
 SQUARISH = .9
 
+MATCH_STRENGTH = 5
 MAX_SPLAY = 10
 SPLAY_COUNT = 0
-
 # make sure this is even
 SPLAY_LENGTH = 4
 
@@ -232,7 +232,7 @@ class Detector():
 	def blobAlreadySeen(self, blob, img):
 		counter = 0
 		for tup in self.foundBlobs:
-			if tup[0].match(blob) < 10:
+			if tup[0].match(blob) < MATCH_STRENGTH:
 			#if self.percentChange(tup[1], img) < .10:
 				# like splay
 				self.foundBlobs.insert(0, self.foundBlobs.pop(counter))

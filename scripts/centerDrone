@@ -115,7 +115,7 @@ def sendRandomWalk(width, height):
 
 	vel.x = random.uniform(0, 2)
 	vel.y = random.uniform(-3, 3)
-	vel.z = random.randint(-2, 0)
+	vel.z = random.randint(-1, 1)
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
