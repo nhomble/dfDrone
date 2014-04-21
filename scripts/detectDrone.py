@@ -10,7 +10,7 @@ import SimpleCV
 # my modules
 import messageDrone
 
-# "ENUMS"
+# eventually I should adapt these to parameters
 MAX_DISTANCE = 200
 MIN_RGB = 160
 MAX_RGB = 210
@@ -21,7 +21,7 @@ DEBUG_STRING = "\t[DRONE_DETECT]"
 MAX_BLOB_SIZE = .7
 MIN_BLOB_SIZE = .1
 
-EROSION = 20
+EROSION = 30
 BINARIZE = 90
 MIN_CORNERS = 5
 MAX_CORNERS = 41
@@ -35,6 +35,13 @@ MAX_SPLAY = 10
 SPLAY_COUNT = 0
 # make sure this is even
 SPLAY_LENGTH = 4
+
+LINE_FAILS = 3
+CORNER_FAILS = 3
+HOLE_FAILS = 4
+COLOR_FAILS = 4
+SQUARISH_FAIL = 5
+MAX_FAILS = 11
 
 # depracated flag
 DEBUG = True
@@ -165,7 +172,7 @@ class Detector():
 #		I should not see that many, trying to avoid black squares/walls
 		flag, lines = getLines(cropped)
 		if flag is False:
-			fails += 3
+			fails += LINE_FAILS
 			print(DEBUG_STRING + " bad lines")
 #			return False, None, None, None
 		else:
@@ -174,7 +181,7 @@ class Detector():
 #		should see quite a few of these because of all the edges
 		flag, corners = getCorners(cropped)
 		if flag is False:
-			fails += 3
+			fails += CORNER_FAILS
 			print(DEBUG_STRING + " no corners")
 #			return False, None, None, None
 		else:
@@ -184,7 +191,7 @@ class Detector():
 #		as opposed to a TV
 		flag, holes = getHoles(cropped)
 		if flag is False:
-			fails += 4
+			fails += HOLE_FAILS
 			print(DEBUG_STRING + " no holes")
 #			return False, None, None, None
 		else:
@@ -192,17 +199,17 @@ class Detector():
 
 #		gotta be black
 		if validRGB(cropped.meanColor()):
-			fails += 5
+			fails += COLOR_FAIL
 			print(DEBUG_STRING + " average color of blob is not valid")
 #			return False, None, None, None
 
 #		try to avoid tall people
 		if not self.squarish(cropped):
-			fails += 4
+			fails += SQUARISH_FAIL
 			print(DEBUG_STRING + " not squarish")
 #			return False, None, None, None
 
-		if fails > 6:
+		if fails > MAX_FAILS:
 			print(DEBUG_STRING + " fails: " + str(fails))
 			return False, None, None, None
 

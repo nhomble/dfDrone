@@ -35,6 +35,7 @@ g_last_centroid = None
 
 g_miss = 0
 g_found = 0
+
 MISS_MAX = 20
 FOUND_MIN = 3
 
@@ -78,7 +79,7 @@ def centroidCallback(message):
 		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
-			g_miss = MISS_MAX/2
+			g_miss = 2*MISS_MAX/4
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
 	g_last_time = time.time()
@@ -113,9 +114,10 @@ def sendVelocityMessage(DFDMessage, delT, newZ):
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None, None)
 
-	vel.x = random.uniform(0, 2)
+	vel.x = random.uniform(0, 3)
 	vel.y = random.uniform(-3, 3)
 	vel.z = random.randint(-1, 1)
+	vel.z = 0
 #	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
 	g_follower.publish(vel.ros())
 
