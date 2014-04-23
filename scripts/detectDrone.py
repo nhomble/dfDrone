@@ -40,7 +40,7 @@ LINE_FAILS = 3
 CORNER_FAILS = 3
 HOLE_FAILS = 4
 COLOR_FAILS = 4
-SQUARISH_FAIL = 5
+SQUARISH_FAILS = 5
 MAX_FAILS = 11
 
 # depracated flag
@@ -199,13 +199,13 @@ class Detector():
 
 #		gotta be black
 		if validRGB(cropped.meanColor()):
-			fails += COLOR_FAIL
+			fails += COLOR_FAILS
 			print(DEBUG_STRING + " average color of blob is not valid")
 #			return False, None, None, None
 
 #		try to avoid tall people
 		if not self.squarish(cropped):
-			fails += SQUARISH_FAIL
+			fails += SQUARISH_FAILS
 			print(DEBUG_STRING + " not squarish")
 #			return False, None, None, None
 
