@@ -36,7 +36,7 @@ def main(argv=None):
 
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
-#	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
+	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
 	sub2 = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback)
 	rospy.spin()
 
@@ -64,18 +64,27 @@ def moveCallback(velocity):
 		g_collision = 0
 		twist.linear.x = -1
 		twist.angular.z = -1
-	# left bumper
+		g_cmd_pub.publish(twist)
+		rospy.sleep(1)
+		rospy.loginfo("avoid collision")
+		# left bumper
 	elif g_collision == 2:
 		g_cmd_pub.publish(stop)
 		g_collision = 0
 		twist.linear.x = -1
 		twist.angular.z = 1
+		g_cmd_pub.publish(twist)
+		rospy.sleep(1)
+		rospy.loginfo("avoid collision")
 	# both
 	elif g_collision == 3:
 		g_cmd_pub.publish(stop)
 		g_collision = 0
 		twist.linear.x = -1
 		twist.angular.z = 2
+		g_cmd_pub.publish(twist)
+		rospy.sleep(1)
+		rospy.loginfo("avoid collision")
 	else:
 
 #		simpler
@@ -95,9 +104,9 @@ def moveCallback(velocity):
 			twist.linear.x = z/2
 			twist.angular.z = x
 	
-	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
+		rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 
-	g_cmd_pub.publish(twist)
+		g_cmd_pub.publish(twist)
 
 if __name__ == "__main__":
 	g_cmd_pub = rospy.Publisher('/cmd_vel_mux/input/teleop', Twist)
