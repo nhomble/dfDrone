@@ -8,6 +8,7 @@ import sys
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
 import tf.transformations
+from create_node.msg import TurtlebotSensorState
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
 
@@ -18,10 +19,14 @@ import messageDrone
 subscribe to centerDrone and given the
 velocity messages, I determine the necessary
 twist messages
+
+also subscribe to turtlebot node to detect collisions
 '''
 
 g_cmd_pub = None
 g_tFollower = None
+
+g_collision = 0
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 
@@ -31,42 +36,65 @@ def main(argv=None):
 
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
-	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
+#	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
+	sub2 = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback)
 	rospy.spin()
+
+# TODO thread safe?
+def collisionCallback(TurtlebotSensorState):
+	global g_collision
+	g_collision = TurtlebotSensorState.bumps_wheeldrops
 
 # check whether or we actually have a velocity or I need to 
 # random walk
 def moveCallback(velocity):
+	global g_collision
+
 	flag = velocity.data[0]
 	x = velocity.data[1]
 	y = velocity.data[2]
 	z = velocity.data[3]
 	
 	twist = Twist()
-#simpler
-#	if I see it just move forward
-#	if I don't see it just move backward
-#
-#	try to zig zag my way to centering the drone
-	if flag == 1.0:
-		twist.linear.x = z
-		if x < 0:
-			twist.angular.z = .5
-		elif x == 0:
-			twist.angular.z = 0
-		else:
-			twist.angular.z = -.5
+	stop = Twist()
+
+	# right bumper
+	if g_collision == 1:
+		g_cmd_pub.publish(stop)
+		g_collision = 0
+		twist.linear.x = -1
+		twist.angular.z = -1
+	# left bumper
+	elif g_collision == 2:
+		g_cmd_pub.publish(stop)
+		g_collision = 0
+		twist.linear.x = -1
+		twist.angular.z = 1
+	# both
+	elif g_collision == 3:
+		g_cmd_pub.publish(stop)
+		g_collision = 0
+		twist.linear.x = -1
+		twist.angular.z = 2
 	else:
-		twist.linear.x = z/2
-		twist.angular.z = x
 
-#	twist.linear.x = (z - ZGOAL) * ZSCALE
-#	twist.angular.z = -x * XSCALE
-#
-#	if flag == 1.0:
-#		twist.linear.x *= 3
-#		twist.angular.z *= 20
-
+#		simpler
+#			if I see it just move forward
+#			if I don't see it just move backward
+#	
+#			try to zig zag my way to centering the drone
+		if flag == 1.0:
+			twist.linear.x = z
+			if x < 0:
+				twist.angular.z = .5
+			elif x == 0:
+				twist.angular.z = 0
+			else:
+				twist.angular.z = -.5
+		else:
+			twist.linear.x = z/2
+			twist.angular.z = x
+	
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
 
 	g_cmd_pub.publish(twist)
