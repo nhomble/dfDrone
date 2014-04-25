@@ -41,7 +41,7 @@ def main(argv=None):
 
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
-	subprocess.call(["espeak", "move drone has initialized"])
+	subprocess.Popen(["espeak", "move drone has initialized"])
 	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
 	sub2 = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback)
 	rospy.spin()
@@ -66,7 +66,7 @@ def moveCallback(velocity):
 	twist = Twist()
 	# right bumper
 	if g_collision != 0:
-		subprocess.call(["espeak", "we have collided with something"])
+		subprocess.Popen(["espeak", "we have collided with something"])
 	if g_collision == 1:
 		twist.linear.x = -2
 		twist.angular.z = -3
@@ -103,7 +103,7 @@ def moveCallback(velocity):
 #	
 #			try to zig zag my way to centering the drone
 	if flag == 1.0:
-		subprocess.call(["espeak", "moving towards the drone"])
+		subprocess.Popen(["espeak", "moving towards the drone"])
 		twist.linear.x = z
 		if x < 0:
 			twist.angular.z = .5
@@ -112,7 +112,7 @@ def moveCallback(velocity):
 		else:
 			twist.angular.z = -.5
 	else:
-		subprocess.call(["espeak", "where is it"])
+		subprocess.Popen(["espeak", "where is it"])
 		twist.linear.x = z/2
 		twist.angular.z = x
 	

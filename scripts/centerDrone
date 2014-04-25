@@ -48,7 +48,7 @@ def main(argv=None):
 	rospy.init_node('centerDrone')
 	rospy.loginfo(DEBUG_STRING + "centerDrone has initialized")
 
-	subprocess.call(["espeak", "center drone has initialized"])	
+	subprocess.Popen(["espeak", "center drone has initialized"])	
 
 	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback)
 	rospy.spin()
