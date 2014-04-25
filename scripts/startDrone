@@ -6,6 +6,7 @@ and then publish centroid and depth data
 '''
 
 # python default modules
+import subprocess
 import sys
 import time
 
@@ -41,6 +42,7 @@ def main(argv=None):
 		argv = sys.argv
 
 	rospy.init_node('startDrone')
+	subprocess.call(["espeak", "start drone has initialized"])
 	rospy.loginfo(DEBUG_STRING + "startDrone has initialized")
 
 #	TODO - use depth
