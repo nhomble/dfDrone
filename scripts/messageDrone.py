@@ -18,6 +18,11 @@ class DFDVelocity():
 			self.y = float(dely)
 			self.z = float(z)
 			self.delay = float(delay)
+	
+	def amplify(self, amp):
+		self.x *= amp
+		self.y *= amp
+		self.z *= amp
 
 	def ros(self):
 		message = Float64MultiArray()

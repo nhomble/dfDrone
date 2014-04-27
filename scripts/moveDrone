@@ -30,10 +30,9 @@ g_tFollower = None
 # collision is the signal
 # count is just me hacking
 g_collision = 0
-g_count = 0
-COUNT_MAX = 3
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
+ESPEAK = False
 
 def main(argv=None):
 	if argv is None:
@@ -41,14 +40,18 @@ def main(argv=None):
 
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
-	subprocess.Popen(["espeak", "move drone has initialized"])
 	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
 	sub2 = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback)
 	rospy.spin()
 
-# TODO thread safe?
+# thread safe, this callback actually gets called several
+# times inbetween moveCallback, here we know if we have
+# collided with something
 def collisionCallback(TurtlebotSensorState):
 	global g_collision
+#	once the signal has been set,
+#	it can only be updated once the moveCallback
+#	has addressed it
 	if g_collision == 0:
 		g_collision = TurtlebotSensorState.bumps_wheeldrops
 		
@@ -57,7 +60,6 @@ def collisionCallback(TurtlebotSensorState):
 # random walk
 def moveCallback(velocity):
 	global g_collision
-	global g_count
 	flag = velocity.data[0]
 	x = velocity.data[1]
 	y = velocity.data[2]
@@ -65,45 +67,33 @@ def moveCallback(velocity):
 
 	twist = Twist()
 	# right bumper
-	if g_collision != 0:
-		subprocess.Popen(["espeak", "we have collided with something"])
 	if g_collision == 1:
 		twist.linear.x = -2
 		twist.angular.z = -3
 		g_cmd_pub.publish(twist)
-		g_count += 1
-		if g_count > COUNT_MAX:	
-			g_collision = 0
-			g_count = 0
+		g_collision = 0
 		return
 	# left bumper
 	elif g_collision == 2:
 		twist.linear.x = -2
 		twist.angular.z = 3
 		g_cmd_pub.publish(twist)
-		g_count += 1
-		if g_count > COUNT_MAX:
-			g_collision = 0
-			g_count = 0
+		g_collision = 0
 		return
 	# both
 	elif g_collision == 3:
 		twist.linear.x = -3
 		twist.angular.z = 3
 		g_cmd_pub.publish(twist)
-		g_count += 1
-		if g_count > COUNT_MAX:
-			g_collision = 0
-			g_count = 0
+		g_collision = 0
 		return
 
-#		simpler
-#			if I see it just move forward
-#			if I don't see it just move backward
-#	
-#			try to zig zag my way to centering the drone
+# 	simpler
+#		if I see it just move forward
+#		if I don't see it just move backward
+#
+#		try to zig zag my way to centering the drone
 	if flag == 1.0:
-		subprocess.Popen(["espeak", "moving towards the drone"])
 		twist.linear.x = z
 		if x < 0:
 			twist.angular.z = .5
@@ -112,12 +102,10 @@ def moveCallback(velocity):
 		else:
 			twist.angular.z = -.5
 	else:
-		subprocess.Popen(["espeak", "where is it"])
 		twist.linear.x = z/2
 		twist.angular.z = x
 	
 	rospy.loginfo(DEBUG_STRING + " Twist: linear: " + str(twist.linear.x) + " angular: " + str(twist.angular.z))
-
 	g_cmd_pub.publish(twist)
 
 if __name__ == "__main__":

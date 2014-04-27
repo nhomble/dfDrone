@@ -25,22 +25,22 @@ import roslib; roslib.load_manifest('dfDrone')
 import rospy
 from std_msgs.msg import Float64MultiArray
 
-# my messages/modules
+# until I integrate my messages in ROS
 import messageDrone
 
-# globals, need to remember previous 
-g_follower = None
-g_move = None
-g_last_time = None
-g_last_centroid = None
+pub = None
 
+# globals, need to remember previous 
 g_miss = 0
 g_found = 0
+
+g_lastVelocity = None
 
 MISS_MAX = 20
 FOUND_MIN = 3
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
+ESPEAK = False
 def main(argv=None):
 	if argv is None:
 		argv = sys.argv
@@ -48,23 +48,14 @@ def main(argv=None):
 	rospy.init_node('centerDrone')
 	rospy.loginfo(DEBUG_STRING + "centerDrone has initialized")
 
-	subprocess.Popen(["espeak", "center drone has initialized"])	
-
 	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback)
 	rospy.spin()
 
 def centroidCallback(message):
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
 
-	global g_last_time
-	global g_last_centroid
 	global g_miss
 	global g_found
-
-	if g_last_time is None or g_last_centroid is None:
-		g_last_centroid = message
-		g_last_time = time.time()
-		pass
 
 	delT = time.time() - g_last_time
 
@@ -82,35 +73,41 @@ def centroidCallback(message):
 		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
-			g_miss = 2*MISS_MAX/4
+			g_miss = MISS_MAX/2
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
-	g_last_time = time.time()
+		elif g_miss < MISS_MAX/2:
+			rospy.loginfo(DEBUG_STRING + "lost it, going to try to interpolate where it should be")
+			sendSeekMessage()
 
-# so given the area of the turtlebot_blob
-# I am going to guess about how far I am from the 
-# ARDrone by the amount of area I see
-
-# I will scale the linear motion in moveDrone
+# I will scale the linear motion in moveDrone, TODO
 def getZPosition(area):
 	goalArea = 1000
 	z = area/goalArea
 #	rospy.loginfo(DEBUG_STRING + " calculated z: " + str(z))
 	return z
 
-# not using all of the variables right now until I figure out what
-# turtlebot follower
+# simple, just fix the linear motion (z) for simplicity
+#	TODO, scale linear motion by suspected area
+# other than that, just publish the raw angular motion for now
 def sendVelocityMessage(DFDMessage, delT, newZ):
+	global g_lastVelocity
 	xCenter = DFDMessage.width // 2
 	yCenter = DFDMessage.height // 2
 
 	z = .3
-#	if newZ > 1:
-#		z = .1
-#	else:
-#		z = -.05
 	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, z, delT)
-	g_follower.publish(vel.ros())
+	g_lastVelocity = vel
+	
+	pub.publish(vel.ros())
+
+# so we have lost track of it, but it could not have gone too far away
+def sendSeekMessage():
+	if g_lastVelocity is None:
+		return
+# 	amplify the last message	
+	g_lastVelocity.amplify(3)
+	pub.publish(vel.ros())
 
 # random velocity
 # just give the turtlebot follower a random (x,y,z)
@@ -119,17 +116,17 @@ def sendRandomWalk(width, height):
 
 	vel.x = random.uniform(0, 3)
 	vel.y = random.uniform(-3, 3)
-	vel.z = random.randint(0, 1)
+	vel.z = random.randint(0, 2)
 	vel.z = 0
-#	rospy.loginfo("\t" + DEBUG_STRING + " randomwalk " + str(vel.x) + " " + str(vel.y) + " " + str(vel.z))
-	g_follower.publish(vel.ros())
+	pub.publish(vel.ros())
 
 # when I see anything that might look like the drone I want to STOP
 # and look at it rather than complete my random movement
 def sendStopMessage():
 	vel = messageDrone.DFDVelocity(True, 0, 0, 0, 0)
-	g_follower.publish(vel.ros())
+	pub.publish(vel.ros())
 
 if __name__ == "__main__":
-	g_follower = rospy.Publisher("centerDrone", Float64MultiArray)
+	global pub
+	pub = rospy.Publisher("centerDrone", Float64MultiArray)
 	sys.exit(main())
