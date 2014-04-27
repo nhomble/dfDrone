@@ -42,7 +42,6 @@ def main(argv=None):
 		argv = sys.argv
 
 	rospy.init_node('startDrone')
-	subprocess.Popen(["espeak", "start drone has initialized"])
 	rospy.loginfo(DEBUG_STRING + "startDrone has initialized")
 
 #	TODO - use depth
