@@ -6,23 +6,22 @@ except:
 	print("ROS installed? I could not import std_msgs in messageDrone")
 
 class DFDVelocity():
-	def __init__(self, flag, delx, dely, z, delay):
+	def __init__(self, flag, delx, dely, z):
 		self.isPresent = flag
 		self.x = 0.0
 		self.y = 0.0
 		self.z = 0.0
-		self.delay = 0.0
 
 		if self.isPresent is True:
 			self.x = float(delx)
 			self.y = float(dely)
 			self.z = float(z)
-			self.delay = float(delay)
 	
+#	I need to look around quickly, but I do not necessarily need to move forward
 	def amplify(self, amp):
 		self.x *= amp
 		self.y *= amp
-		self.z *= amp
+		#self.z *= amp
 
 	def ros(self):
 		message = Float64MultiArray()
@@ -47,10 +46,12 @@ class DFDMessage():
 		self.z = 0.0
 		self.area = 0.0
 		if self.isPresent is True:
-			self.x = centroid[0]
-			self.y = centroid[1]
-			self.z = z
-			self.area = area
+			self.x = float(centroid[0])
+			self.y = float(centroid[1])
+			if z is not None:
+				self.z = float(z)
+			if area is not None:
+				self.area = float(area)
 	def __str__(self):
 		return "" + self.isPresent
 	
