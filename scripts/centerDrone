@@ -23,6 +23,7 @@ import time
 # ROS
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
+from create_node.msg import TurtlebotSensorState
 from std_msgs.msg import Float64MultiArray
 
 # until I integrate my messages in ROS
@@ -39,6 +40,8 @@ g_lastVelocity = None
 MISS_MAX = 20
 FOUND_MIN = 3
 
+AMPLIFY = 3
+
 DEBUG_STRING = "\t[CENTER_DRONE] "
 ESPEAK = False
 def main(argv=None):
@@ -48,16 +51,36 @@ def main(argv=None):
 	rospy.init_node('centerDrone')
 	rospy.loginfo(DEBUG_STRING + "centerDrone has initialized")
 
-	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback)
+	dfd_sub = rospy.Subscriber('startDrone', Float64MultiArray, centroidCallback, queue_size=1)
+	col_sub = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback, queue_size=1)
+
 	rospy.spin()
 
+def collisionCallback(TurtlebotSensorState):
+	global g_miss
+	g_miss = MISS_MAX/2
+	g_collision = TurtlebotSensorState.bumps_wheeldrops
+	if g_collision != 0:
+		rospy.loginfo(DEBUG_STRING + " collision")
+		sendStopMessage()
+	if g_collision == 1:
+		sendDirectMessage(-4, -3)
+	# left bumper
+	elif g_collision == 2:
+		sendDirectMessage(-4, 3)
+	# both
+	elif g_collision == 3:
+		sendDirectMessage(-4, 3)
+
+def sendDirectMessage(lin, ang):
+	vel = messageDrone.DFDVelocity(True, ang, 0, lin)
+	pub.publish(vel.ros())
+	
 def centroidCallback(message):
 	message = messageDrone.DFDMessage(message.data[0] == 1.0, (message.data[1], message.data[2]), message.data[3], message.data[4], message.data[5], message.data[6])
 
 	global g_miss
 	global g_found
-
-	delT = time.time() - g_last_time
 
 	if message.isPresent is True:
 		g_miss = 0
@@ -65,7 +88,7 @@ def centroidCallback(message):
 		newZ = getZPosition(message.area)
 
 		if g_found > FOUND_MIN:
-			sendVelocityMessage(message, delT, newZ)
+			sendVelocityMessage(message, newZ)
 		else:
 			sendStopMessage()
 	else:
@@ -76,7 +99,7 @@ def centroidCallback(message):
 			g_miss = MISS_MAX/2
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
-		elif g_miss < MISS_MAX/2:
+		elif g_miss < MISS_MAX/4 and g_lastVelocity is not None:
 			rospy.loginfo(DEBUG_STRING + "lost it, going to try to interpolate where it should be")
 			sendSeekMessage()
 
@@ -90,13 +113,13 @@ def getZPosition(area):
 # simple, just fix the linear motion (z) for simplicity
 #	TODO, scale linear motion by suspected area
 # other than that, just publish the raw angular motion for now
-def sendVelocityMessage(DFDMessage, delT, newZ):
+def sendVelocityMessage(DFDMessage, newZ):
 	global g_lastVelocity
 	xCenter = DFDMessage.width // 2
 	yCenter = DFDMessage.height // 2
 
 	z = .3
-	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, z, delT)
+	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, z)
 	g_lastVelocity = vel
 	
 	pub.publish(vel.ros())
@@ -106,27 +129,25 @@ def sendSeekMessage():
 	if g_lastVelocity is None:
 		return
 # 	amplify the last message	
-	g_lastVelocity.amplify(3)
-	pub.publish(vel.ros())
+	g_lastVelocity.amplify(AMPLIFY)
+	pub.publish(g_lastVelocity.ros())
 
 # random velocity
 # just give the turtlebot follower a random (x,y,z)
 def sendRandomWalk(width, height):
-	vel = messageDrone.DFDVelocity(False, None, None, None, None)
+	vel = messageDrone.DFDVelocity(False, None, None, None)
 
-	vel.x = random.uniform(0, 3)
+	vel.x = random.uniform(-2, 2)
 	vel.y = random.uniform(-3, 3)
 	vel.z = random.randint(0, 2)
-	vel.z = 0
 	pub.publish(vel.ros())
 
 # when I see anything that might look like the drone I want to STOP
 # and look at it rather than complete my random movement
 def sendStopMessage():
-	vel = messageDrone.DFDVelocity(True, 0, 0, 0, 0)
+	vel = messageDrone.DFDVelocity(True, 0, 0, 0)
 	pub.publish(vel.ros())
 
 if __name__ == "__main__":
-	global pub
 	pub = rospy.Publisher("centerDrone", Float64MultiArray)
 	sys.exit(main())
