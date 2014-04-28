@@ -44,21 +44,14 @@ def main(argv=None):
 	rospy.init_node('startDrone')
 	rospy.loginfo(DEBUG_STRING + "startDrone has initialized")
 
-#	TODO - use depth
-#	getColor = False
-#	if getColor is False:
-#		getColor = True
-#		depth_sub = rospy.Subscriber('/camera/depth/image_rect', Image, depthCallback)
-#	else:
-#		getColor = False
-#		color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback)
+	depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, depthCallback, queue_size=1)
 	color_sub = rospy.Subscriber('/camera/rgb/image_color', Image, colorCallback, queue_size=1)
 	rospy.spin()
 
 def depthCallback(image):
 	global g_depth
 
-#	 rospy.loginfo(DEBUG_STRING + "depth callback in startDrone")
+#	rospy.loginfo(DEBUG_STRING + "depth callback in startDrone")
 	g_depth = image
 #	if global_color is not None and global_depth is not None:
 #		processImage(global_color, global_depth)
@@ -82,7 +75,7 @@ def processImage(colorImage, depthImage):
 	depth = None
 
 	if depthImage is not None:
-		depthFrame = b.imgmsg_to_cv(depthImage, "32fc1")
+		depthFrame = b.imgmsg_to_cv(depthImage, "16UC1")
 		depth = SimpleCV.Image(colorFrame, cv2image=True)
 	
 	# create message - ugly since I do not have my custom message
