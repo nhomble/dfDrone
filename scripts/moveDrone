@@ -9,7 +9,6 @@ import sys
 import roslib; roslib.load_manifest('dfDrone')
 import rospy
 import tf.transformations
-from create_node.msg import TurtlebotSensorState
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
 
@@ -25,11 +24,6 @@ also subscribe to turtlebot node to detect collisions
 '''
 
 g_cmd_pub = None
-g_tFollower = None
-
-# collision is the signal
-# count is just me hacking
-g_collision = 0
 
 DEBUG_STRING = "\t\t[MOVE_DRONE] "
 ESPEAK = False
@@ -40,54 +34,18 @@ def main(argv=None):
 
 	rospy.init_node('moveDrone')
 	rospy.loginfo(DEBUG_STRING + "moveDrone has initialized")
-	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback)
-	sub2 = rospy.Subscriber('/mobile_base/sensors/core', TurtlebotSensorState, collisionCallback)
+	sub = rospy.Subscriber('centerDrone', Float64MultiArray, moveCallback, queue_size=1)
 	rospy.spin()
-
-# thread safe, this callback actually gets called several
-# times inbetween moveCallback, here we know if we have
-# collided with something
-def collisionCallback(TurtlebotSensorState):
-	global g_collision
-#	once the signal has been set,
-#	it can only be updated once the moveCallback
-#	has addressed it
-	if g_collision == 0:
-		g_collision = TurtlebotSensorState.bumps_wheeldrops
-		
 
 # check whether or we actually have a velocity or I need to 
 # random walk
 def moveCallback(velocity):
-	global g_collision
 	flag = velocity.data[0]
 	x = velocity.data[1]
 	y = velocity.data[2]
 	z = velocity.data[3]
 
 	twist = Twist()
-	# right bumper
-	if g_collision == 1:
-		twist.linear.x = -2
-		twist.angular.z = -3
-		g_cmd_pub.publish(twist)
-		g_collision = 0
-		return
-	# left bumper
-	elif g_collision == 2:
-		twist.linear.x = -2
-		twist.angular.z = 3
-		g_cmd_pub.publish(twist)
-		g_collision = 0
-		return
-	# both
-	elif g_collision == 3:
-		twist.linear.x = -3
-		twist.angular.z = 3
-		g_cmd_pub.publish(twist)
-		g_collision = 0
-		return
-
 # 	simpler
 #		if I see it just move forward
 #		if I don't see it just move backward
