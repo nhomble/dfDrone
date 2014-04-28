@@ -15,7 +15,7 @@ MAX_DISTANCE = 200
 MIN_RGB = 160
 MAX_RGB = 210
 MIN_AREA = 10000
-MAX_AREA = 300000
+MAX_AREA = 200000
 DEBUG_STRING = "\t[DRONE_DETECT]"
 
 MAX_BLOB_SIZE = .7
@@ -38,8 +38,8 @@ SPLAY_LENGTH = 4
 
 LINE_FAILS = 1
 CORNER_FAILS = 1
-HOLE_FAILS = 3
-COLOR_FAILS = 2
+HOLE_FAILS = 4
+COLOR_FAILS = 3
 SQUARISH_FAILS = 4
 MAX_FAILS = 4
 
@@ -82,7 +82,7 @@ class Detector():
 		#print(DEBUG_STRING + " " + str(message.isPresent))
 		if isFound is True:
 			print(DEBUG_STRING + " FOUND")
-			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y))
+			print(DEBUG_STRING + " X:" + str(message.x) + " Y:" + str(message.y) + " Z:" + str(message.z))
 			print(DEBUG_STRING + " Width:" + str(self.width) + " Height:" + str(self.height))
 			print(DEBUG_STRING + " Area:" + str(area))
 			print(DEBUG_STRING + " Lines: " + str(lines))
@@ -96,28 +96,19 @@ class Detector():
 	# return whether we got something, and return the centroid if possible
 	def hasDrone(self, img, depth):
 		objects = None
-
 		# when I have depth data, use it to:
 		#	filter out object in the image
 		#	get z
-		if depth is not None:
-			objects = getBlobs(depth, self.min_blob_size, self.max_blob_size)
-			if objects is None:
-				return False, None, None, None, None, None
-			
-			for obj in objects:
-				cropped = cropFromBlobs(obj, img)
-				
-				tValid, tCentroid= self.hasDroneAux(cropped)
-				return tValid, tCentroid, dep
-				if tValid is True:
-					dep = depth.getPixel(tCentroid[0], tCentroid[1])
-					# calibrate dep TODO
-					return tValid, tCentroid, dep
-			return False, None, None, None, None, None
+		flag, centroid, _, lines, corners, holes = self.hasDroneAux(img)
+		if flag is True:
+			z = depth.getPixel(int(math.floor(centroid[0])), int(math.floor(centroid[1])))
+			if z[0] != 0:
+				z = 1/z[0]
+			else:
+				z = -1
+			return flag, centroid, z, lines, corners, holes
 		else:
-			v, c, area, lines, corners, holes = self.hasDroneAux(img, 0)
-			return v, c, area, lines, corners, holes
+			return flag, None, None, None, None, None
 
 	# helper function to see if an ARDRone is in an image by RGB
 	def hasDroneAux(self, img):
@@ -369,9 +360,13 @@ and cool visuals
 def getHoles(img):
 	holes = img.findBlobs()
 	if len(holes) > MIN_HOLES:
-		return True, holes
-	else:
-		return False, None
+		count = 0
+		for h in holes:
+			if not validRGB(h.meanColor()) and str(h) != "":
+				count += 1
+		if count > MIN_HOLES:	
+			return True, holes
+	return False, None
 
 def getLines(img):
 	lines = img.findLines()
