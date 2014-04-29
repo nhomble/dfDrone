@@ -58,9 +58,9 @@ def main(argv=None):
 
 def collisionCallback(TurtlebotSensorState):
 	global g_miss
-	g_miss = MISS_MAX/2
 	g_collision = TurtlebotSensorState.bumps_wheeldrops
 	if g_collision != 0:
+		g_miss = MISS_MAX/2
 		rospy.loginfo(DEBUG_STRING + " collision")
 		sendStopMessage()
 	if g_collision == 1:
