@@ -40,7 +40,8 @@ g_lastVelocity = None
 MISS_MAX = 20
 FOUND_MIN = 3
 
-AMPLIFY = 3
+AMPLIFY = 4
+SEEK_MAX = 4
 
 DEBUG_STRING = "\t[CENTER_DRONE] "
 ESPEAK = False
@@ -63,6 +64,7 @@ def collisionCallback(TurtlebotSensorState):
 		g_miss = MISS_MAX/2
 		rospy.loginfo(DEBUG_STRING + " collision")
 		sendStopMessage()
+		subprocess.Popen(["espeak", "collision", "-s 100"])
 	if g_collision == 1:
 		sendDirectMessage(-4, -3)
 	# left bumper
@@ -89,18 +91,23 @@ def centroidCallback(message):
 
 		if g_found > FOUND_MIN:
 			sendVelocityMessage(message, newZ)
+			if g_found == FOUND_MIN + 1:
+				subprocess.Popen(["espeak", "found it", "-s 100"])
 		else:
+			subprocess.Popen(["espeak", "stop", "-s 100"])
 			sendStopMessage()
 	else:
 		rospy.loginfo(DEBUG_STRING + "misses: " + str(g_miss))
 		g_found = 0
 		g_miss += 1	
 		if g_miss > MISS_MAX:
+			subprocess.Popen(["espeak", "totally lost it", "-s 100"])
 			g_miss = MISS_MAX/2
 			rospy.loginfo(DEBUG_STRING + "requesting random walk")
 			sendRandomWalk(message.width, message.height)
-		elif g_miss < MISS_MAX/4 and g_lastVelocity is not None:
+		elif g_miss < SEEK_MAX and g_lastVelocity is not None:
 			rospy.loginfo(DEBUG_STRING + "lost it, going to try to interpolate where it should be")
+			subprocess.Popen(["espeak", "I just saw it", "-s 100"])
 			sendSeekMessage()
 
 # I will scale the linear motion in moveDrone, TODO
@@ -118,8 +125,13 @@ def sendVelocityMessage(DFDMessage, newZ):
 	xCenter = DFDMessage.width // 2
 	yCenter = DFDMessage.height // 2
 
+	if DFDMessage.x - xCenter > 0:
+		ang = .5
+	else:
+		ang = -.5
+
 	z = .3
-	vel = messageDrone.DFDVelocity(True, DFDMessage.x - xCenter, DFDMessage.y - yCenter, z)
+	vel = messageDrone.DFDVelocity(True, ang, 0, z)
 	g_lastVelocity = vel
 	
 	pub.publish(vel.ros())
@@ -137,9 +149,9 @@ def sendSeekMessage():
 def sendRandomWalk(width, height):
 	vel = messageDrone.DFDVelocity(False, None, None, None)
 
-	vel.x = random.uniform(-2, 2)
+	vel.x = random.uniform(-1, 3)
 	vel.y = random.uniform(-3, 3)
-	vel.z = random.randint(0, 2)
+	vel.z = random.randint(0, 1)
 	pub.publish(vel.ros())
 
 # when I see anything that might look like the drone I want to STOP
